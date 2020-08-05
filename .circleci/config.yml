@@ -21,6 +21,13 @@ commands:
             pip install --progress-bar off numpy
             pip install --progress-bar off -e .[test]
 
+      - run:
+          name: Format code
+          command: black -t py37 $MODULE
+
+      - run:
+          name: Format imports
+          command: isort MODULE
 
       - save_cache:
           key: pip3.7--{{ checksum ".circleci/config.yml" }}--{{ checksum "setup.py" }}
@@ -47,14 +54,6 @@ jobs:
     parallelism: 1  # change this with a payed plan.
     steps:
       - build
-
-      - run:
-          name: Format code
-          command: black -t py37 $MODULE
-
-      - run:
-          name: Format imports
-          command: isort MODULE
 
       - run:
           name: Run Style Tests
