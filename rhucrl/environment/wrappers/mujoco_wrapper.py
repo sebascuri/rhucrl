@@ -2,25 +2,30 @@
 
 from typing import Dict, List, Optional, Tuple
 
+import gym.error
 import numpy as np
-from gym.envs.mujoco import (
-    AntEnv,
-    HalfCheetahEnv,
-    HopperEnv,
-    HumanoidEnv,
-    HumanoidStandupEnv,
-    InvertedDoublePendulumEnv,
-    InvertedPendulumEnv,
-    MujocoEnv,
-    PusherEnv,
-    ReacherEnv,
-    StrikerEnv,
-    SwimmerEnv,
-    ThrowerEnv,
-    Walker2dEnv,
-)
 
 from .adversarial_wrapper import AdversarialWrapper
+
+try:
+    from gym.envs.mujoco import (
+        AntEnv,
+        HalfCheetahEnv,
+        HopperEnv,
+        HumanoidEnv,
+        HumanoidStandupEnv,
+        InvertedDoublePendulumEnv,
+        InvertedPendulumEnv,
+        MujocoEnv,
+        PusherEnv,
+        ReacherEnv,
+        StrikerEnv,
+        SwimmerEnv,
+        ThrowerEnv,
+        Walker2dEnv,
+    )
+except (ModuleNotFoundError, gym.error.DependencyNotInstalled):
+    pass
 
 
 class MujocoAdversarialWrapper(AdversarialWrapper):
