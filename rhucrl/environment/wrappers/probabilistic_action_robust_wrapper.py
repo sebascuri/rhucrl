@@ -47,7 +47,7 @@ class ProbabilisticActionRobustWrapper(AdversarialWrapper):
         )
 
     def adversarial_step(
-        self, protagonist_action, adversarial_action
+        self, protagonist_action: np.ndarray, adversarial_action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """See `gym.Env.step()'."""
         assert (
