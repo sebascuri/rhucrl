@@ -1,4 +1,5 @@
-# rllib
+# Implementation of Robust H-UCRL Algorithm
+
 
 [![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/master?label=master%20build%20and%20test&token=fa2c21d3aa7c7b3e2b6a51aa824e135bd2f85b31)](https://app.circleci.com/pipelines/github/sebascuri/rhucrl)
 [![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/dev?label=dev%20build%20and%20test&token=fa2c21d3aa7c7b3e2b6a51aa824e135bd2f85b31)](https://app.circleci.com/pipelines/github/sebascuri/rhucrl)
