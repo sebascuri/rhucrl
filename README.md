@@ -1,16 +1,15 @@
 # rllib
 
-[![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/master?label=master%20build%20and%20test&token=25c056fd6b7e322c55dd48fd0c6052b1f8800919)](https://app.circleci.com/pipelines/github/sebascuri/rllib)
-[![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/dev?label=dev%20build%20and%20test&token=25c056fd6b7e322c55dd48fd0c6052b1f8800919)](https://app.circleci.com/pipelines/github/sebascuri/rllib)
-[![CircleCI](https://circleci.com/gh/sebascuri/rllib/tree/master.svg?style=shield&circle-token=25c056fd6b7e322c55dd48fd0c6052b1f8800919)](https://circleci.com/gh/circleci/circleci-docs/tree/teesloane-patch-5)
+[![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/master?label=master%20build%20and%20test&token=fa2c21d3aa7c7b3e2b6a51aa824e135bd2f85b31)](https://app.circleci.com/pipelines/github/sebascuri/rhucrl)
+[![CircleCI](https://img.shields.io/circleci/build/github/sebascuri/rhucrl/dev?label=dev%20build%20and%20test&token=fa2c21d3aa7c7b3e2b6a51aa824e135bd2f85b31)](https://app.circleci.com/pipelines/github/sebascuri/rhucrl)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://pypi.org/project/hug/)
 
 
 To install create a conda environment:
 ```bash
-$ conda create -n rllib python=3.7
-$ conda activate rllib
+$ conda create -n rhucrl python=3.7
+$ conda activate rhucrl
 ```
 
 ```bash

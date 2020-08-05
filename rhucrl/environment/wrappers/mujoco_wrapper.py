@@ -1,6 +1,6 @@
 """Python Script Template."""
 
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from gym.envs.mujoco import (
@@ -20,7 +20,7 @@ from gym.envs.mujoco import (
     Walker2dEnv,
 )
 
-from rhucrl.environment.adversarial_wrapper import AdversarialWrapper
+from .adversarial_wrapper import AdversarialWrapper
 
 
 class MujocoAdversarialWrapper(AdversarialWrapper):
@@ -29,11 +29,10 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
     def __init__(
         self,
         env: MujocoEnv,
+        alpha: float = 5.0,
         force_body_names: Optional[List[str]] = None,
-        alpha: float = 0,
         new_mass: Optional[Dict[str, float]] = None,
         new_friction: Optional[Dict[str, float]] = None,
-        reward_function: Optional[Callable] = None,
     ):
         force_body_names = [] if force_body_names is None else force_body_names
         self._adv_bindex = [env.model.body_names.index(i) for i in force_body_names]
@@ -52,7 +51,6 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
             adversarial_low=adversarial_low,
             adversarial_high=adversarial_high,
             alpha=alpha,
-            reward_function=reward_function,
         )
 
     def _adv_to_xfrc(self, adversarial_action: np.ndarray) -> None:
@@ -78,120 +76,102 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
 
 def get_ant_torso_env(**kwargs):
     """Get AntEnv with perturbations in the torso and heel."""
-    return MujocoAdversarialWrapper(
-        env=AntEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
-    )
+    return MujocoAdversarialWrapper(env=AntEnv(), force_body_names=["torso"], **kwargs)
 
 
 def get_half_cheetah_torso_env(**kwargs):
     """Get HalfCheetahEnv with perturbations in the torso."""
     return MujocoAdversarialWrapper(
-        env=HalfCheetahEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
+        env=HalfCheetahEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_hopper_torso_env(**kwargs):
     """Get HopperEnv with perturbations in the torso and heel."""
     return MujocoAdversarialWrapper(
-        env=HopperEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
+        env=HopperEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_humanoid_torso_env(**kwargs):
     """Get HumanoidEnv with perturbations in the torso and heel."""
     return MujocoAdversarialWrapper(
-        env=HumanoidEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
+        env=HumanoidEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_humanoid_standup_torso_env(**kwargs):
     """Get HumanoidStandupEnv with perturbations in the torso and heel."""
     return MujocoAdversarialWrapper(
-        env=HumanoidStandupEnv(),
-        force_body_names=["torso"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=HumanoidStandupEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_inverted_pendulum_pole_env(**kwargs):
     """Get InvertedPendulumEnv with perturbations in the pole."""
     return MujocoAdversarialWrapper(
-        env=InvertedPendulumEnv(),
-        force_body_names=["pole"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=InvertedPendulumEnv(), force_body_names=["pole"], **kwargs
     )
 
 
 def get_inverted_double_pendulum_pole2_env(**kwargs):
     """Get InvertedDoublePendulumEnv with perturbations in the second pole."""
     return MujocoAdversarialWrapper(
-        env=InvertedDoublePendulumEnv(),
-        force_body_names=["pole2"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=InvertedDoublePendulumEnv(), force_body_names=["pole2"], **kwargs
     )
 
 
 def get_walker_torso_env(**kwargs):
     """Get Walker2dEnv with perturbations in the pole."""
     return MujocoAdversarialWrapper(
-        env=Walker2dEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
+        env=Walker2dEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_reacher_body1_env(**kwargs):
     """Get ReacherEnv with perturbations in the body1 link."""
     return MujocoAdversarialWrapper(
-        env=ReacherEnv(), force_body_names=["body1"], alpha=kwargs.get("alpha", 5.0)
+        env=ReacherEnv(), force_body_names=["body1"], **kwargs
     )
 
 
 def get_swimmer_env(**kwargs):
     """Get SwimmerEnv with perturbations in the torso."""
     return MujocoAdversarialWrapper(
-        env=SwimmerEnv(), force_body_names=["torso"], alpha=kwargs.get("alpha", 5.0)
+        env=SwimmerEnv(), force_body_names=["torso"], **kwargs
     )
 
 
 def get_pusher_env(**kwargs):
     """Get PusherEnv with perturbations in the r_shoulder_lift_link."""
     return MujocoAdversarialWrapper(
-        env=PusherEnv(),
-        force_body_names=["r_shoulder_lift_link"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=PusherEnv(), force_body_names=["r_shoulder_lift_link"], **kwargs
     )
 
 
 def get_thrower_env(**kwargs):
     """Get ThrowerEnv with perturbations in the r_shoulder_lift_link."""
     return MujocoAdversarialWrapper(
-        env=ThrowerEnv(),
-        force_body_names=["r_shoulder_lift_link"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=ThrowerEnv(), force_body_names=["r_shoulder_lift_link"], **kwargs
     )
 
 
 def get_stricker_env(**kwargs):
     """Get StrikerEnv with perturbations in the r_shoulder_lift_link."""
     return MujocoAdversarialWrapper(
-        env=StrikerEnv(),
-        force_body_names=["r_shoulder_lift_link"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=StrikerEnv(), force_body_names=["r_shoulder_lift_link"], **kwargs
     )
 
 
 def get_half_cheetah_heel_env(**kwargs):
     """Get HalfCheetahEnv with perturbations in the heels."""
     return MujocoAdversarialWrapper(
-        env=HalfCheetahEnv(),
-        force_body_names=["bfoot", "ffoot"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=HalfCheetahEnv(), force_body_names=["bfoot", "ffoot"], **kwargs
     )
 
 
 def get_half_cheetah_torso_heel_env(**kwargs):
     """Get HalfCheetahEnv with perturbations in the torso and heel."""
     return MujocoAdversarialWrapper(
-        env=HalfCheetahEnv(),
-        force_body_names=["torso", "bfoot", "ffoot"],
-        alpha=kwargs.get("alpha", 5.0),
+        env=HalfCheetahEnv(), force_body_names=["torso", "bfoot", "ffoot"], **kwargs
     )
