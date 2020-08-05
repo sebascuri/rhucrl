@@ -27,7 +27,7 @@ commands:
 
       - run:
           name: Format imports
-          command: isort MODULE
+          command: isort $MODULE
 
       - save_cache:
           key: pip3.7--{{ checksum ".circleci/config.yml" }}--{{ checksum "setup.py" }}
