@@ -10,7 +10,7 @@ def adversarial_solver(
     base_solver: MPCSolver,
     protagonist_dim_action: Tuple[int],
     adversarial_dim_action: Tuple[int],
-):
+) -> MPCSolver:
     """Get Adversarial MPC Shooting algorithm class."""
     #
 
