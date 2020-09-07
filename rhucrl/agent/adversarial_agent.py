@@ -6,33 +6,17 @@ from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Observation
 from torch import Tensor
 
+from rhucrl.policy.joint_policy import JointPolicy
+
 
 class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     """Adversarial Agent."""
 
-    def __init__(
-        self,
-        protagonist_agent,
-        adversarial_agent,
-        train_frequency=1,
-        num_rollouts=0,
-        exploration_steps=0,
-        exploration_episodes=0,
-        gamma=0.99,
-        comment="",
-    ):
-        super().__init__(
-            train_frequency=train_frequency,
-            num_rollouts=num_rollouts,
-            exploration_steps=exploration_steps,
-            exploration_episodes=exploration_episodes,
-            gamma=gamma,
-            comment=comment,
-        )
+    def __init__(self, protagonist_agent, adversarial_agent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         protagonist_agent.comment = "Protagonist"
         adversarial_agent.comment = "Adversary"
 
-        self.dist_params = protagonist_agent.dist_params
         self.protagonist_agent = protagonist_agent
         self.adversarial_agent = adversarial_agent
 
@@ -44,6 +28,10 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         self.protagonist_training = True
         self.adversarial_training = True
 
+        self.policy = JointPolicy(
+            self.protagonist_agent.policy, self.adversarial_agent.policy
+        )
+
     def send_observations(
         self, protagonist_observation: Observation, adversarial_observation: Observation
     ) -> None:
@@ -51,13 +39,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         self.protagonist_agent.observe(protagonist_observation)
         self.adversarial_agent.observe(adversarial_observation)
 
-        if (
-            self._training  # training mode.
-            and self.total_steps >= self.exploration_steps  # enough steps.
-            and self.total_episodes >= self.exploration_episodes  # enough episodes.
-            and self.train_frequency > 0  # train after a transition.
-            and self.total_steps % self.train_frequency == 0  # correct steps.
-        ):
+        if self.train_at_observe:
             self.learn()
 
     def learn(self) -> None:
@@ -85,13 +67,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         self.protagonist_agent.end_episode()
         self.adversarial_agent.end_episode()
 
-        if (
-            self._training  # training mode.
-            and self.total_steps >= self.exploration_steps  # enough steps.
-            and self.total_episodes >= self.exploration_episodes  # enough episodes.
-            and self.num_rollouts > 0  # train once the episode ends.
-            and (self.total_episodes + 1) % self.num_rollouts == 0  # correct steps.
-        ):  # use total_episodes + 1 because the super() is called after training.
+        if self.train_at_end_episode:
             self.learn()
         super().end_episode()
 

@@ -2,7 +2,12 @@
 
 import torch
 from rllib.dataset.datatypes import State, TupleDistribution
-from rllib.policy import AbstractPolicy
+from rllib.policy import AbstractPolicy, NNPolicy
+
+from rhucrl.environment.utilities import (
+    adversarial_to_adversary_environment,
+    adversarial_to_protagonist_environment,
+)
 
 from .adversarial_policy import AdversarialPolicy
 
@@ -24,6 +29,7 @@ class JointPolicy(AdversarialPolicy):
             action_scale=torch.cat(
                 (protagonist_policy.action_scale, adversarial_policy.action_scale)
             ),
+            dist_params=protagonist_policy.dist_params,
         )
         self.protagonist_policy = protagonist_policy
         self.adversarial_policy = adversarial_policy
@@ -36,3 +42,14 @@ class JointPolicy(AdversarialPolicy):
         return self.stack_distributions(
             protagonist_mean, protagonist_chol, adversarial_mean, adversarial_chol
         )
+
+    @classmethod
+    def default(cls, environment, *args, **kwargs):
+        """Get default policy."""
+        protagonist_env = adversarial_to_protagonist_environment(environment)
+        protagonist_policy = NNPolicy.default(protagonist_env, *args, **kwargs)
+
+        adversarial_env = adversarial_to_adversary_environment(environment)
+        adversarial_policy = NNPolicy.default(adversarial_env, *args, **kwargs)
+
+        return cls(protagonist_policy, adversarial_policy)

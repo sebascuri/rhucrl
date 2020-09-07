@@ -20,17 +20,12 @@ class AdversarialPolicy(AbstractPolicy):
         dim_state: Tuple[int],
         protagonist_dim_action: Tuple[int],
         adversarial_dim_action: Tuple[int],
-        deterministic: bool,
-        action_scale: torch.Tensor,
+        *args,
+        **kwargs
     ) -> None:
         dim_action = protagonist_dim_action[0] + adversarial_dim_action[0]
 
-        super().__init__(
-            dim_state=dim_state,
-            dim_action=(dim_action,),
-            deterministic=deterministic,
-            action_scale=action_scale,
-        )
+        super().__init__(dim_state=dim_state, dim_action=(dim_action,), *args, **kwargs)
         self.protagonist_dim_action = protagonist_dim_action
         self.adversarial_dim_action = adversarial_dim_action
 

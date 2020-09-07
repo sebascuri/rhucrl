@@ -2,7 +2,13 @@
 from typing import Tuple
 
 from rllib.dataset.datatypes import State, TupleDistribution
-from rllib.policy import AbstractPolicy
+from rllib.policy import AbstractPolicy, NNPolicy
+
+from rhucrl.environment.adversarial_environment import AdversarialEnv
+from rhucrl.environment.utilities import (
+    adversarial_to_adversary_environment,
+    adversarial_to_protagonist_environment,
+)
 
 from .adversarial_policy import AdversarialPolicy
 
@@ -26,6 +32,7 @@ class SplitPolicy(AdversarialPolicy):
             adversarial_dim_action=adversarial_dim_action,
             deterministic=base_policy.deterministic,
             action_scale=base_policy.action_scale,
+            dist_params=base_policy.dist_params,
         )
         self.base_policy = base_policy
         self._protagonist = protagonist
@@ -57,4 +64,29 @@ class SplitPolicy(AdversarialPolicy):
 
         return self.stack_distributions(
             protagonist_mean, protagonist_chol, adversarial_mean, adversarial_chol
+        )
+
+    @classmethod
+    def default(
+        cls,
+        environment: AdversarialEnv,
+        base_policy=None,
+        protagonist=True,
+        *args,
+        **kwargs
+    ):
+        """Get default policy."""
+        if protagonist:
+            derived_env = adversarial_to_protagonist_environment(environment)
+        else:
+            derived_env = adversarial_to_adversary_environment(environment)
+
+        if base_policy is None:
+            base_policy = NNPolicy.default(derived_env, *args, **kwargs)
+
+        return cls(
+            base_policy,
+            environment.protagonist_dim_action,
+            environment.adversarial_dim_action,
+            protagonist,
         )
