@@ -3,14 +3,13 @@ from rhucrl.algorithm.adversarial_mpc import adversarial_solver
 from rhucrl.environment.adversarial_environment import AdversarialEnv
 from rhucrl.environment.wrappers import NoisyActionRobustWrapper
 from rhucrl.environment.wrappers import RewardWrapper, ResetWrapper
-from rllib.model.abstract_model import AbstractModel
-from rllib.reward.abstract_reward import AbstractReward
+from rhucrl.utilities.training import train_adversarial_agent
+from rllib.model import AbstractModel, TransformedModel
 
 from rllib.algorithms.mpc import CEMShooting, MPPIShooting
 
-from rllib.policy.mpc_policy import MPCPolicy
 from rllib.agent import MPCAgent
-from rllib.util.training import train_agent, evaluate_agent
+from rllib.util.training.agent_training import train_agent, evaluate_agent
 import torch
 import numpy as np
 
@@ -44,7 +43,12 @@ print(env.antagonist_dim_action, env.protagonist_dim_action)
 print(env.action_scale)
 
 
-class PendulumReward(AbstractReward):
+class PendulumReward(AbstractModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            dim_state=(3,), dim_action=(2,), model_kind="rewards",
+        )
+
     def forward(self, state, action, next_state):
         th, thdot = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
         action = action[..., 0]
@@ -61,7 +65,7 @@ class PendulumModel(AbstractModel):
         self.max_torque = 2.0
         self.alpha = alpha
 
-    def forward(self, state, action):
+    def forward(self, state, action, next_state=None):
         th, thdot = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
 
         p_action = action[..., 0]
@@ -88,31 +92,15 @@ class PendulumModel(AbstractModel):
         )
 
 
-mpc_solver = adversarial_solver(
-    base_solver=CEMShooting(
-        dynamical_model=PendulumModel(alpha=ALPHA),
-        reward_model=PendulumReward(),
-        horizon=20,
-        gamma=1.0,
-        num_iter=5,
-        num_samples=400,
-        num_elites=40,
-        termination=None,
-        terminal_reward=None,
-        warm_start=True,
-        default_action="zero",
-        num_cpu=1,
-        action_scale=env.action_scale,
-    ),
-    protagonist_dim_action=env.protagonist_dim_action,
-    antagonist_dim_action=env.antagonist_dim_action,
+from rhucrl.agent.adversarial_mpc_agent import AdversarialMPCAgent
+
+agent = AdversarialMPCAgent.default(
+    env,
+    dynamical_model=TransformedModel(PendulumModel(alpha=ALPHA), []),
+    reward_model=PendulumReward(),
 )
-
-policy = MPCPolicy(mpc_solver)
-
-agent = MPCAgent(mpc_policy=policy)
-
-train_agent(
+train_adversarial_agent(
+    mode="both",
     environment=env,
     agent=agent,
     max_steps=200,

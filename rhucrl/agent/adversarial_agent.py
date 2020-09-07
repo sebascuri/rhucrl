@@ -4,9 +4,8 @@ from typing import Optional
 
 from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Observation
+from rllib.util.logger import Logger
 from torch import Tensor
-
-from rhucrl.policy.joint_policy import JointPolicy
 
 
 class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
@@ -14,22 +13,17 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
     def __init__(self, protagonist_agent, antagonist_agent, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        protagonist_agent.comment = "Protagonist"
-        antagonist_agent.comment = "Antagonist"
-
         self.protagonist_agent = protagonist_agent
         self.antagonist_agent = antagonist_agent
-
-        self.protagonist_agent.train_frequency = 0
-        self.protagonist_agent.num_rollouts = 0
-        self.antagonist_agent.train_frequency = 0
-        self.antagonist_agent.num_rollouts = 0
-
-        self.protagonist_training = True
-        self.antagonist_training = True
-
-        self.policy = JointPolicy(
-            self.protagonist_agent.policy, self.antagonist_agent.policy
+        self.protagonist_agent.logger.delete_directory()
+        self.protagonist_agent.logger = Logger(
+            f"{self.logger.writer.logdir[5:]}/Protagonist",
+            tensorboard=kwargs.get("tensorboard", False),
+        )
+        self.antagonist_agent.logger.delete_directory()
+        self.antagonist_agent.logger = Logger(
+            f"{self.logger.writer.logdir[5:]}/Antagonist",
+            tensorboard=kwargs.get("tensorboard", False),
         )
 
     def send_observations(
@@ -38,16 +32,6 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         """Send the observations to each player."""
         self.protagonist_agent.observe(protagonist_observation)
         self.antagonist_agent.observe(antagonist_observation)
-
-        if self.train_at_observe:
-            self.learn()
-
-    def learn(self) -> None:
-        """Learn protagonist and antagonist agents."""
-        if self.protagonist_training:
-            self.protagonist_agent.learn()
-        if self.antagonist_training:
-            self.antagonist_agent.learn()
 
     def __str__(self) -> str:
         """Generate string to parse the agent."""
@@ -66,9 +50,6 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         """End episode of both players."""
         self.protagonist_agent.end_episode()
         self.antagonist_agent.end_episode()
-
-        if self.train_at_end_episode:
-            self.learn()
         super().end_episode()
 
     def end_interaction(self) -> None:
@@ -87,8 +68,6 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
         In eval mode, both the protagonist and the antagonist learn.
         """
-        self.protagonist_training = True
-        self.antagonist_training = True
         self.protagonist_agent.train(val)
         self.antagonist_agent.train(val)
         super().train(val)
@@ -98,29 +77,41 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
         In eval mode, both the protagonist and the antagonist do not learn.
         """
-        self.protagonist_training = False
-        self.antagonist_training = False
         self.protagonist_agent.eval(val)
         self.antagonist_agent.eval(val)
         super().eval(val)
 
-    def train_antagonist(self) -> None:
-        """Set train-antagonist mode.
+    def train_only_antagonist(self) -> None:
+        """Set into train antagonist mode.
 
         In this training mode, the protagonist is kept fixed, and the antagonist learns
         to hinder the protagonist.
         """
-        self.protagonist_training = False
         self.protagonist_agent.eval()
-
-        self.antagonist_training = True
         self.antagonist_agent.train()
+
+    def train_only_protagonist(self) -> None:
+        """Set into train protagonist mode.
+
+        In this training mode, the antagonist is kept fixed, and the protagonist learns
+        to hinder the antagonist.
+        """
+        self.protagonist_agent.train()
+        self.antagonist_agent.eval()
 
     def only_protagonist(self, val: bool = True) -> None:
         """Evaluate the protagonist using only the protagonist policy."""
         self.policy.only_protagonist = val
 
     def save(self, filename, directory=None):
-        """Save agent."""
+        """Save both agents."""
         self.protagonist_agent.save("Protagonist" + filename, directory=directory)
         self.antagonist_agent.save("Antagonist" + filename, directory=directory)
+
+    def load_protagonist(self, path):
+        """Load protagonist agent from path."""
+        self.protagonist_agent.load(path)
+
+    def load_antagonist(self, path):
+        """Load antagonist agent from path."""
+        self.protagonist_agent.load(path)

@@ -1,5 +1,6 @@
 """Python Script Template."""
 from importlib import import_module
+from typing import Any, Optional
 
 from rllib.dataset.datatypes import Observation
 from rllib.util.neural_networks.utilities import deep_copy_module
@@ -18,7 +19,9 @@ class ZeroSumAgent(AdversarialAgent):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    policy: SplitPolicy
+
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         assert (
             self.protagonist_agent.policy.base_policy
@@ -41,12 +44,25 @@ class ZeroSumAgent(AdversarialAgent):
 
     @classmethod
     def default(
-        cls, environment: AdversarialEnv, base_agent_name: str = "SAC", *args, **kwargs
+        cls,
+        environment: AdversarialEnv,
+        protagonist_agent_name: str = "SAC",
+        antagonist_agent_name: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
     ):
         """Get default Zero-Sum agent."""
-        agent = getattr(import_module("rllib.agent"), f"{base_agent_name}Agent")
-        protagonist_agent = agent.default(environment, *args, **kwargs)
-        antagonist_agent = agent.default(environment, *args, **kwargs)
+        agent_ = getattr(import_module("rllib.agent"), f"{protagonist_agent_name}Agent")
+        protagonist_agent = agent_.default(
+            environment, comment="Protagonist", *args, **kwargs
+        )
+
+        if antagonist_agent_name is None:
+            antagonist_agent_name = protagonist_agent_name
+        agent_ = getattr(import_module("rllib.agent"), f"{antagonist_agent_name}Agent")
+        antagonist_agent = agent_.default(
+            environment, comment="Antagonist", *args, **kwargs
+        )
 
         protagonist_policy = SplitPolicy(
             base_policy=protagonist_agent.policy,
@@ -70,12 +86,10 @@ class ZeroSumAgent(AdversarialAgent):
             agent.algorithm.policy = policy
             agent.algorithm.policy_target = deep_copy_module(policy)
 
-        return cls(
-            protagonist_agent,
-            antagonist_agent,
-            train_frequency=protagonist_agent.train_frequency,
-            num_iter=protagonist_agent.num_iter,
-            num_rollouts=protagonist_agent.num_rollouts,
+        return super().default(
+            environment,
+            protagonist_agent=protagonist_agent,
+            antagonist_agent=antagonist_agent,
             *args,
             **kwargs,
         )

@@ -2,6 +2,8 @@
 
 from gym.envs.registration import register
 
+from .adversarial_environment import AdversarialEnv
+
 ENVIRONMENTS = [
     "AntAdvEnv-v0",
     "HalfCheetahAdvEnv-v0",

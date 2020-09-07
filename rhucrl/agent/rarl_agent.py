@@ -1,5 +1,6 @@
 """Python Script Template."""
 from importlib import import_module
+from typing import Any, Optional
 
 from rllib.dataset.datatypes import Observation
 
@@ -8,6 +9,7 @@ from rhucrl.environment.utilities import (
     adversarial_to_antagonist_environment,
     adversarial_to_protagonist_environment,
 )
+from rhucrl.policy.joint_policy import JointPolicy
 
 from .adversarial_agent import AdversarialAgent
 
@@ -19,6 +21,14 @@ class RARLAgent(AdversarialAgent):
     The protagonist receives (s, a_pro, r, s') and the antagonist (s, a_ant, -r, s').
 
     """
+
+    policy: JointPolicy
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.policy = JointPolicy(
+            self.protagonist_agent.policy, self.antagonist_agent.policy
+        )
 
     def observe(self, observation: Observation) -> None:
         """Send observations to both players.
@@ -41,9 +51,9 @@ class RARLAgent(AdversarialAgent):
         cls,
         environment: AdversarialEnv,
         protagonist_agent_name: str = "SAC",
-        antagonist_agent_name: str = "SAC",
-        *args,
-        **kwargs,
+        antagonist_agent_name: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
     ):
         """Get default RARL agent."""
         protagonist_environment = adversarial_to_protagonist_environment(environment)
@@ -51,18 +61,18 @@ class RARLAgent(AdversarialAgent):
 
         protagonist_agent = getattr(
             import_module("rllib.agent"), f"{protagonist_agent_name}Agent"
-        ).default(protagonist_environment, *args, **kwargs)
+        ).default(protagonist_environment, comment="Protagonist", *args, **kwargs)
 
+        if antagonist_agent_name is None:
+            antagonist_agent_name = protagonist_agent_name
         antagonist_agent = getattr(
             import_module("rllib.agent"), f"{antagonist_agent_name}Agent"
-        ).default(antagonist_environment, *args, **kwargs)
+        ).default(antagonist_environment, comment="Antagonist", *args, **kwargs)
 
-        return cls(
-            protagonist_agent,
-            antagonist_agent,
-            train_frequency=protagonist_agent.train_frequency,
-            num_iter=protagonist_agent.num_iter,
-            num_rollouts=protagonist_agent.num_rollouts,
+        return super().default(
+            environment,
+            protagonist_agent=protagonist_agent,
+            antagonist_agent=antagonist_agent,
             *args,
             **kwargs,
         )

@@ -1,6 +1,6 @@
 """Python Script Template."""
 from rhucrl.environment.adversarial_environment import AdversarialEnv
-from rhucrl.environment.adversarial_wrapper import (
+from rhucrl.environment.wrappers import (
     NoisyActionRobustWrapper,
     ProbabilisticActionRobustWrapper,
 )

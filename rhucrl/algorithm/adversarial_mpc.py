@@ -43,7 +43,7 @@ def adversarial_solver(
             state = repeat_along_dimension(state, number=self.num_samples, dim=-2)
 
             # max_{protagonist} min_{antagonist} max_{hallucination}
-            for i in range(self.num_iter):
+            for _ in range(self.num_iter):
                 action_sequence = self.get_candidate_action_sequence()
                 returns = self.evaluate_action_sequence(action_sequence, state)
 
@@ -67,7 +67,7 @@ def adversarial_solver(
             p_action = repeat_along_dimension(
                 self.mean[..., : self.p_dim_action[0]], number=self.num_samples, dim=-2
             )
-            for i in range(self.num_iter):
+            for _ in range(self.num_iter):
                 action_sequence = self.get_candidate_action_sequence()
 
                 # Fix protagonists actions.
@@ -77,6 +77,8 @@ def adversarial_solver(
                 elite_actions = self.get_best_action(action_sequence, -returns)
                 self.update_sequence_generation(elite_actions)
 
+            if self.clamp:
+                return self.mean.clamp(-1.0, 1.0)
             return self.mean
 
     return AdversarialMPCShooting(
