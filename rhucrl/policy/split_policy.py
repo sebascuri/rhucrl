@@ -1,5 +1,5 @@
 """Python Script Template."""
-from typing import Tuple
+from typing import Any, Optional, Tuple, Type, TypeVar
 
 from rllib.dataset.datatypes import State, TupleDistribution
 from rllib.policy import AbstractPolicy, NNPolicy
@@ -11,6 +11,8 @@ from rhucrl.environment.utilities import (
 )
 
 from .adversarial_policy import AdversarialPolicy
+
+T = TypeVar("T", bound="SplitPolicy")
 
 
 class SplitPolicy(AdversarialPolicy):
@@ -67,13 +69,13 @@ class SplitPolicy(AdversarialPolicy):
 
     @classmethod
     def default(
-        cls,
+        cls: Type[T],
         environment: AdversarialEnv,
-        base_policy=None,
-        protagonist=True,
-        *args,
-        **kwargs
-    ):
+        base_policy: Optional[AbstractPolicy] = None,
+        protagonist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
         """Get default policy."""
         if protagonist:
             derived_env = adversarial_to_protagonist_environment(environment)

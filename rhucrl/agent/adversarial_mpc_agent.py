@@ -1,5 +1,5 @@
 """Python Script Template."""
-from typing import Any
+from typing import Any, Type, TypeVar
 
 from rllib.agent import MPCAgent, RandomAgent
 from rllib.algorithms.mpc.abstract_solver import MPCSolver
@@ -9,6 +9,8 @@ from rhucrl.algorithm.adversarial_mpc import adversarial_solver
 from rhucrl.environment.adversarial_environment import AdversarialEnv
 
 from .adversarial_agent import AdversarialAgent
+
+T = TypeVar("T", bound="AdversarialMPCAgent")
 
 
 class AdversarialMPCAgent(AdversarialAgent):
@@ -34,7 +36,9 @@ class AdversarialMPCAgent(AdversarialAgent):
         self.send_observations(protagonist_observation, antagonist_observation)
 
     @classmethod
-    def default(cls, environment: AdversarialEnv, *args, **kwargs):
+    def default(
+        cls: Type[T], environment: AdversarialEnv, *args: Any, **kwargs: Any
+    ) -> T:
         """Get default RARL agent."""
         agent = MPCAgent.default(environment, *args, **kwargs)
         mpc_solver = adversarial_solver(

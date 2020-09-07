@@ -1,6 +1,6 @@
 """Python Script Template."""
 from importlib import import_module
-from typing import Any, Optional
+from typing import Any, Optional, Type, TypeVar
 
 from rllib.dataset.datatypes import Observation
 
@@ -12,6 +12,8 @@ from rhucrl.environment.utilities import (
 from rhucrl.policy.joint_policy import JointPolicy
 
 from .adversarial_agent import AdversarialAgent
+
+T = TypeVar("T", bound="RARLAgent")
 
 
 class RARLAgent(AdversarialAgent):
@@ -48,13 +50,13 @@ class RARLAgent(AdversarialAgent):
 
     @classmethod
     def default(
-        cls,
+        cls: Type[T],
         environment: AdversarialEnv,
         protagonist_agent_name: str = "SAC",
         antagonist_agent_name: Optional[str] = None,
         *args: Any,
         **kwargs: Any,
-    ):
+    ) -> T:
         """Get default RARL agent."""
         protagonist_environment = adversarial_to_protagonist_environment(environment)
         antagonist_environment = adversarial_to_antagonist_environment(environment)

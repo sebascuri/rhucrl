@@ -1,4 +1,5 @@
 """Python Script Template."""
+from typing import Any, Type, TypeVar
 
 import torch
 from rllib.dataset.datatypes import State, TupleDistribution
@@ -11,6 +12,8 @@ from rhucrl.environment.utilities import (
 )
 
 from .adversarial_policy import AdversarialPolicy
+
+T = TypeVar("T", bound="JointPolicy")
 
 
 class JointPolicy(AdversarialPolicy):
@@ -45,7 +48,9 @@ class JointPolicy(AdversarialPolicy):
         )
 
     @classmethod
-    def default(cls, environment: AdversarialEnv, *args, **kwargs):
+    def default(
+        cls: Type[T], environment: AdversarialEnv, *args: Any, **kwargs: Any
+    ) -> T:
         """Get default policy."""
         protagonist_env = adversarial_to_protagonist_environment(environment)
         protagonist_policy = NNPolicy.default(protagonist_env, *args, **kwargs)

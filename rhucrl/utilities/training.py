@@ -1,11 +1,16 @@
 """Python Script Template."""
+from typing import Callable, List, Optional
+
 import matplotlib.pyplot as plt
+from rllib.agent import AbstractAgent
+from rllib.environment import AbstractEnvironment
+from rllib.util.logger import Logger
 from rllib.util.rollout import rollout_agent
 
 from rhucrl.agent.adversarial_agent import AdversarialAgent
 
 
-def plot_logger(logger, title_str):
+def plot_logger(logger: Logger, title_str: str) -> None:
     """Plott logger."""
     for key in logger.keys:
         plt.plot(logger.get(key))
@@ -17,18 +22,18 @@ def plot_logger(logger, title_str):
 
 def train_adversarial_agent(
     agent: AdversarialAgent,
-    environment,
-    num_episodes,
-    max_steps,
-    mode="both",
-    plot_flag=True,
-    print_frequency=0,
-    eval_frequency=0,
-    plot_frequency=0,
-    save_milestones=None,
-    render=False,
-    plot_callbacks=None,
-):
+    environment: AbstractEnvironment,
+    num_episodes: int,
+    max_steps: int,
+    mode: str = "both",
+    plot_flag: bool = True,
+    print_frequency: int = 0,
+    eval_frequency: int = 0,
+    plot_frequency: int = 0,
+    save_milestones: Optional[List[int]] = None,
+    render: bool = False,
+    plot_callbacks: Optional[List[Callable[[AbstractAgent, int], None]]] = None,
+) -> None:
     """Train an agent in an environment.
 
     Parameters

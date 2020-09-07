@@ -1,6 +1,6 @@
 """Python Script Template."""
 from importlib import import_module
-from typing import Any, Optional
+from typing import Any, Optional, Type, TypeVar
 
 from rllib.dataset.datatypes import Observation
 from rllib.util.neural_networks.utilities import deep_copy_module
@@ -9,6 +9,8 @@ from rhucrl.environment.adversarial_environment import AdversarialEnv
 from rhucrl.policy.split_policy import SplitPolicy
 
 from .adversarial_agent import AdversarialAgent
+
+T = TypeVar("T", bound="ZeroSumAgent")
 
 
 class ZeroSumAgent(AdversarialAgent):
@@ -44,13 +46,13 @@ class ZeroSumAgent(AdversarialAgent):
 
     @classmethod
     def default(
-        cls,
+        cls: Type[T],
         environment: AdversarialEnv,
         protagonist_agent_name: str = "SAC",
         antagonist_agent_name: Optional[str] = None,
         *args: Any,
         **kwargs: Any,
-    ):
+    ) -> T:
         """Get default Zero-Sum agent."""
         agent_ = getattr(import_module("rllib.agent"), f"{protagonist_agent_name}Agent")
         protagonist_agent = agent_.default(

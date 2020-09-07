@@ -1,5 +1,5 @@
 """Python Script Template."""
-from typing import Tuple
+from typing import Any, Tuple
 
 import torch
 from rllib.dataset.datatypes import State, TupleDistribution
@@ -20,8 +20,8 @@ class AdversarialPolicy(AbstractPolicy):
         dim_state: Tuple[int],
         protagonist_dim_action: Tuple[int],
         antagonist_dim_action: Tuple[int],
-        *args,
-        **kwargs
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         dim_action = protagonist_dim_action[0] + antagonist_dim_action[0]
 
