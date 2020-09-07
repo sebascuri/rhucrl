@@ -21,27 +21,27 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
 
     """
 
-    adversarial_low: np.ndarray
-    adversarial_high: np.ndarray
+    antagonist_low: np.ndarray
+    antagonist_high: np.ndarray
 
     protagonist_action_dim: Tuple[int]
-    adversarial_action_dim: Tuple[int]
+    antagonist_action_dim: Tuple[int]
 
     def __init__(
         self,
         env: Env,
-        adversarial_low: np.ndarray,
-        adversarial_high: np.ndarray,
+        antagonist_low: np.ndarray,
+        antagonist_high: np.ndarray,
         alpha: float = 1.0,
     ) -> None:
         super().__init__(env=env)
         if not isinstance(self.action_space, Box):
             raise TypeError("Only continuous actions allowed.")
         self.protagonist_action_dim = self.env.action_space.shape
-        self.adversarial_action_dim = adversarial_high.shape
+        self.antagonist_action_dim = antagonist_high.shape
 
-        self.adversarial_low = adversarial_low
-        self.adversarial_high = adversarial_high
+        self.antagonist_low = antagonist_low
+        self.antagonist_high = antagonist_high
         self.alpha = alpha
 
     @property
@@ -58,12 +58,12 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
 
         self.action_space = Box(
             low=np.concatenate(
-                (self.env.unwrapped.action_space.low, alpha * self.adversarial_low)
+                (self.env.unwrapped.action_space.low, alpha * self.antagonist_low)
             ),
             high=np.concatenate(
-                (self.env.unwrapped.action_space.high, alpha * self.adversarial_high)
+                (self.env.unwrapped.action_space.high, alpha * self.antagonist_high)
             ),
-            shape=(self.protagonist_action_dim[0] + self.adversarial_action_dim[0],),
+            shape=(self.protagonist_action_dim[0] + self.antagonist_action_dim[0],),
             dtype=np.float32,
         )
 
@@ -76,17 +76,17 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
             assert self.action_space.contains(action), f"{action} invalid"
 
             protagonist_action = action[: self.protagonist_action_dim[0]]
-            adv_action = action[self.protagonist_action_dim[0] :]
+            antagonist_action = action[self.protagonist_action_dim[0] :]
 
             observation, reward, done, info = self.adversarial_step(
-                protagonist_action, adv_action
+                protagonist_action, antagonist_action
             )
 
         return observation, reward, done, info
 
     @abstractmethod
     def adversarial_step(
-        self, protagonist_action: np.ndarray, adversarial_action: np.ndarray
+        self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """Perform an adversarial step on the environment."""
         raise NotImplementedError

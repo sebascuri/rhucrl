@@ -14,7 +14,7 @@ class NoisyActionRobustWrapper(AdversarialWrapper):
     A noisy action robust environments executes an action given by:
 
     ..math:: a = (1 - \alpha) a_p + \alpha a_a,
-    where, a_p is the player's action and a_a is the adversarial action.
+    where, a_p is the protagonist action and a_a is the antagonist action.
 
     Parameters
     ----------
@@ -40,22 +40,22 @@ class NoisyActionRobustWrapper(AdversarialWrapper):
             raise TypeError("Only continuous actions allowed.")
         super().__init__(
             env,
-            adversarial_low=env.action_space.low * (0 if alpha == 0 else 1 / alpha),
-            adversarial_high=env.action_space.high * (0 if alpha == 0 else 1 / alpha),
+            antagonist_low=env.action_space.low * (0 if alpha == 0 else 1 / alpha),
+            antagonist_high=env.action_space.high * (0 if alpha == 0 else 1 / alpha),
             alpha=alpha,
         )
 
     def adversarial_step(
-        self, protagonist_action: np.ndarray, adversarial_action: np.ndarray
+        self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """See `gym.Env.step()'."""
         assert (
             len(protagonist_action) == self.protagonist_action_dim[0]
         ), "Protagonist action has wrong dimensions."
         assert (
-            len(adversarial_action) == self.protagonist_action_dim[0]
+            len(antagonist_action) == self.protagonist_action_dim[0]
         ), "Adversarial action has wrong dimensions."
 
-        # Choose action by averaging protagonist and adversarial actions.
-        action = (1 - self.alpha) * protagonist_action + self.alpha * adversarial_action
+        # Choose action by averaging protagonist and antagonist actions.
+        action = (1 - self.alpha) * protagonist_action + self.alpha * antagonist_action
         return self.env.step(action)

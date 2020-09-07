@@ -40,7 +40,7 @@ env = AdversarialEnv(ENV, seed=SEED, alpha=ALPHA)
 # env.add_wrapper(NoisyActionRobustWrapper, alpha=ALPHA)
 env.add_wrapper(RewardWrapper, reward_function=pendulum_reward)
 env.add_wrapper(ResetWrapper, reset_function=pendulum_reset)
-print(env.adversarial_dim_action, env.protagonist_dim_action)
+print(env.antagonist_dim_action, env.protagonist_dim_action)
 print(env.action_scale)
 
 
@@ -105,7 +105,7 @@ mpc_solver = adversarial_solver(
         action_scale=env.action_scale,
     ),
     protagonist_dim_action=env.protagonist_dim_action,
-    adversarial_dim_action=env.adversarial_dim_action,
+    antagonist_dim_action=env.antagonist_dim_action,
 )
 
 policy = MPCPolicy(mpc_solver)

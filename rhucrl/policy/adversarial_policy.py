@@ -8,10 +8,10 @@ from rllib.util.neural_networks.utilities import get_batch_size
 
 
 class AdversarialPolicy(AbstractPolicy):
-    """Given a protagonist and an adversarial policy, combine to give a joint policy."""
+    """Given a protagonist and an antagonist policy, combine to give a joint policy."""
 
     protagonist_dim_action: Tuple[int]
-    adversarial_dim_action: Tuple[int]
+    antagonist_dim_action: Tuple[int]
 
     _only_protagonist: bool
 
@@ -19,15 +19,15 @@ class AdversarialPolicy(AbstractPolicy):
         self,
         dim_state: Tuple[int],
         protagonist_dim_action: Tuple[int],
-        adversarial_dim_action: Tuple[int],
+        antagonist_dim_action: Tuple[int],
         *args,
         **kwargs
     ) -> None:
-        dim_action = protagonist_dim_action[0] + adversarial_dim_action[0]
+        dim_action = protagonist_dim_action[0] + antagonist_dim_action[0]
 
         super().__init__(dim_state=dim_state, dim_action=(dim_action,), *args, **kwargs)
         self.protagonist_dim_action = protagonist_dim_action
-        self.adversarial_dim_action = adversarial_dim_action
+        self.antagonist_dim_action = antagonist_dim_action
 
         self._only_protagonist = False
 
@@ -45,15 +45,15 @@ class AdversarialPolicy(AbstractPolicy):
         self,
         protagonist_mean: torch.Tensor,
         protagonist_chol: torch.Tensor,
-        adversarial_mean: torch.Tensor,
-        adversarial_chol: torch.Tensor,
+        antagonist_mean: torch.Tensor,
+        antagonist_chol: torch.Tensor,
     ) -> TupleDistribution:
         """Stack Protagonist and Adversarial distributions."""
         if self.only_protagonist:
             return protagonist_mean, protagonist_chol
 
         bs = get_batch_size(protagonist_mean, self.protagonist_dim_action)
-        mean = torch.cat((protagonist_mean, adversarial_mean), dim=-1)
+        mean = torch.cat((protagonist_mean, antagonist_mean), dim=-1)
         if self.deterministic:
             chol = torch.zeros(bs + self.dim_action)
         else:
@@ -63,7 +63,7 @@ class AdversarialPolicy(AbstractPolicy):
             ] = protagonist_chol
             chol[
                 ..., self.protagonist_dim_action[0] :, self.protagonist_dim_action[0] :
-            ] = adversarial_chol
+            ] = antagonist_chol
 
         return mean, chol
 

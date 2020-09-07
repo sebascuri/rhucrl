@@ -5,7 +5,7 @@ from typing import Tuple
 import numpy as np
 from gym.envs.classic_control.pendulum import PendulumEnv, angle_normalize
 
-from rhucrl.environment.wrappers import AdversarialWrapper
+from .adversarial_wrapper import AdversarialWrapper
 
 
 class OtherPendulum(PendulumEnv):
@@ -37,18 +37,18 @@ class PendulumAdvEnv(AdversarialWrapper):
     env: OtherPendulum
 
     def __init__(self, alpha=0.5):
-        adversarial_bounds = 2 * np.ones((1,))
+        antagonist_bounds = 2 * np.ones((1,))
         super().__init__(
             env=OtherPendulum(g=10.0),
-            adversarial_low=-adversarial_bounds,
-            adversarial_high=adversarial_bounds,
+            antagonist_low=-antagonist_bounds,
+            antagonist_high=antagonist_bounds,
             alpha=alpha,
         )
 
     def adversarial_step(
-        self, original_action: np.ndarray, adversarial_action: np.ndarray
+        self, original_action: np.ndarray, antagonist_action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """See AdversarialWrapper.step()."""
         self.env.g = 10.0
-        self.env.m = 1.0 + adversarial_action[0]
+        self.env.m = 1.0 + antagonist_action[0]
         return self.env.step(original_action)

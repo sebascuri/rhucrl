@@ -37,9 +37,11 @@ try:
             new_friction: Optional[Dict[str, float]] = None,
         ):
             force_body_names = [] if force_body_names is None else force_body_names
-            self._adv_bindex = [env.model.body_names.index(i) for i in force_body_names]
-            adversarial_high = np.ones(2 * len(force_body_names))
-            adversarial_low = -adversarial_high
+            self._antagonist_bindex = [
+                env.model.body_names.index(i) for i in force_body_names
+            ]
+            antagonist_high = np.ones(2 * len(force_body_names))
+            antagonist_low = -antagonist_high
 
             new_mass = {} if new_mass is None else new_mass
             for body_name, weight in new_mass.items():
@@ -52,18 +54,18 @@ try:
 
             super().__init__(
                 env=env,
-                adversarial_low=adversarial_low,
-                adversarial_high=adversarial_high,
+                antagonist_low=antagonist_low,
+                antagonist_high=antagonist_high,
                 alpha=alpha,
             )
 
-        def _adv_to_xfrc(self, adversarial_action: np.ndarray) -> None:
-            for i, bindex in enumerate(self._adv_bindex):
+        def _antagonist_action_to_xfrc(self, antagonist_action: np.ndarray) -> None:
+            for i, bindex in enumerate(self._antagonist_bindex):
                 self.sim.data.xfrc_applied[bindex] = np.array(
                     [
-                        adversarial_action[i * 2],
+                        antagonist_action[i * 2],
                         0.0,
-                        adversarial_action[i * 2 + 1],
+                        antagonist_action[i * 2 + 1],
                         0.0,
                         0.0,
                         0.0,
@@ -71,10 +73,10 @@ try:
                 )
 
         def adversarial_step(
-            self, protagonist_action: np.ndarray, adversarial_action: np.ndarray
+            self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
         ) -> Tuple[np.ndarray, float, bool, dict]:
             """See `AdversarialWrapper.adversarial_step()'."""
-            self._adv_to_xfrc(adversarial_action)
+            self._antagonist_action_to_xfrc(antagonist_action)
             return self.env.step(protagonist_action)
 
     def get_ant_torso_env(**kwargs):

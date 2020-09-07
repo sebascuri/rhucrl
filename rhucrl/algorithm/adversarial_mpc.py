@@ -9,7 +9,7 @@ from rllib.util.neural_networks.utilities import repeat_along_dimension
 def adversarial_solver(
     base_solver: MPCSolver,
     protagonist_dim_action: Tuple[int],
-    adversarial_dim_action: Tuple[int],
+    antagonist_dim_action: Tuple[int],
 ) -> MPCSolver:
     """Get Adversarial MPC Shooting algorithm class."""
     #
@@ -21,17 +21,17 @@ def adversarial_solver(
             self,
             base_solver: MPCSolver,
             protagonist_dim_action: Tuple[int],
-            adversarial_dim_action: Tuple[int],
+            antagonist_dim_action: Tuple[int],
         ):
             super().__init__(
                 **{**base_solver.__dict__, **dict(base_solver.named_modules())}
             )
             self.p_dim_action = protagonist_dim_action
-            self.a_dim_action = adversarial_dim_action
+            self.a_dim_action = antagonist_dim_action
             self.h_dim_aciton = (
                 self.dynamical_model.dim_action[0]
                 - protagonist_dim_action[0]
-                - adversarial_dim_action[0],
+                - antagonist_dim_action[0],
             )
 
         def forward(self, state):
@@ -42,7 +42,7 @@ def adversarial_solver(
 
             state = repeat_along_dimension(state, number=self.num_samples, dim=-2)
 
-            # max_{protagonist} min_{adversary} max_{hallucination}
+            # max_{protagonist} min_{antagonist} max_{hallucination}
             for i in range(self.num_iter):
                 action_sequence = self.get_candidate_action_sequence()
                 returns = self.evaluate_action_sequence(action_sequence, state)
@@ -82,5 +82,5 @@ def adversarial_solver(
     return AdversarialMPCShooting(
         base_solver=base_solver,
         protagonist_dim_action=protagonist_dim_action,
-        adversarial_dim_action=adversarial_dim_action,
+        antagonist_dim_action=antagonist_dim_action,
     )

@@ -19,7 +19,7 @@ for wrapper in [NoisyActionRobustWrapper, ProbabilisticActionRobustWrapper]:
     for environment in ["HalfCheetah-v2", "Pendulum-v0"]:
         print(environment, wrapper)
         env = AdversarialEnv(environment)
-        print(env.adversarial_dim_action, env.protagonist_dim_action)
+        print(env.antagonist_dim_action, env.protagonist_dim_action)
         env.alpha = 1.0
         assert env.alpha == 0
 
@@ -29,7 +29,7 @@ for wrapper in [NoisyActionRobustWrapper, ProbabilisticActionRobustWrapper]:
 
         env.add_wrapper(wrapper, alpha=0.4)
         assert env.alpha == 0.4
-        print(env.adversarial_dim_action, env.protagonist_dim_action, env.env.alpha)
+        print(env.antagonist_dim_action, env.protagonist_dim_action, env.env.alpha)
         env.alpha = 1.0
         assert env.alpha == 1.0
         env.reset()

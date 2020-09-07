@@ -14,7 +14,7 @@ class ZeroSumAgent(AdversarialAgent):
     """Zero-Sum Agent.
 
     Zero-Sum has two dependent agents.
-    The protagonist receives (s, a, r, s') and the adversary (s, a, -r, s').
+    The protagonist receives (s, a, r, s') and the protagonist (s, a, -r, s').
 
     """
 
@@ -22,21 +22,22 @@ class ZeroSumAgent(AdversarialAgent):
         super().__init__(*args, **kwargs)
         assert (
             self.protagonist_agent.policy.base_policy
-            is self.adversarial_agent.policy.base_policy
+            is self.antagonist_agent.policy.base_policy
         ), "Protagonist and Adversarial agent should share the base policy."
         self.policy = self.protagonist_agent.policy
 
     def observe(self, observation: Observation) -> None:
         """Send observations to both players.
 
-        This is the crucial method as it needs to separate the actions.
+        The protagonist receives (s, a, r, s') and the antagonist (s, a, -r, s').
+
         """
         super().observe(observation)
         protagonist_observation = Observation(*observation)
-        adversarial_observation = Observation(*observation)
-        adversarial_observation.reward = -observation.reward
+        antagonist_observation = Observation(*observation)
+        antagonist_observation.reward = -observation.reward
 
-        self.send_observations(protagonist_observation, adversarial_observation)
+        self.send_observations(protagonist_observation, antagonist_observation)
 
     @classmethod
     def default(
@@ -45,25 +46,25 @@ class ZeroSumAgent(AdversarialAgent):
         """Get default Zero-Sum agent."""
         agent = getattr(import_module("rllib.agent"), f"{base_agent_name}Agent")
         protagonist_agent = agent.default(environment, *args, **kwargs)
-        adversarial_agent = agent.default(environment, *args, **kwargs)
+        antagonist_agent = agent.default(environment, *args, **kwargs)
 
         protagonist_policy = SplitPolicy(
             base_policy=protagonist_agent.policy,
             protagonist_dim_action=environment.protagonist_dim_action,
-            adversarial_dim_action=environment.adversarial_dim_action,
+            antagonist_dim_action=environment.antagonist_dim_action,
             protagonist=True,
         )
 
-        adversarial_policy = SplitPolicy(
+        antagonist_policy = SplitPolicy(
             base_policy=protagonist_agent.policy,
             protagonist_dim_action=environment.protagonist_dim_action,
-            adversarial_dim_action=environment.adversarial_dim_action,
+            antagonist_dim_action=environment.antagonist_dim_action,
             protagonist=False,
         )
 
         for agent, policy in zip(
-            (protagonist_agent, adversarial_agent),
-            (protagonist_policy, adversarial_policy),
+            (protagonist_agent, antagonist_agent),
+            (protagonist_policy, antagonist_policy),
         ):
             agent.policy = policy
             agent.algorithm.policy = policy
@@ -71,7 +72,7 @@ class ZeroSumAgent(AdversarialAgent):
 
         return cls(
             protagonist_agent,
-            adversarial_agent,
+            antagonist_agent,
             train_frequency=protagonist_agent.train_frequency,
             num_iter=protagonist_agent.num_iter,
             num_rollouts=protagonist_agent.num_rollouts,

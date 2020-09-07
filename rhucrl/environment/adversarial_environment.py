@@ -16,8 +16,8 @@ class AdversarialEnv(GymEnvironment):
         return self.env.unwrapped.action_space.shape
 
     @property
-    def adversarial_dim_action(self) -> Tuple[int]:
-        """Get adversarial action dimensions."""
+    def antagonist_dim_action(self) -> Tuple[int]:
+        """Get antagonist action dimensions."""
         return (self.env.action_space.shape[0] - self.protagonist_dim_action[0],)
 
     @property
