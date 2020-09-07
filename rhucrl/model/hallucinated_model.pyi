@@ -9,12 +9,13 @@ from torch import Tensor
 class HallucinatedModel(TransformedModel):
     """Optimistic Model returns a Delta at the optimistic next state."""
 
-    dim_action: Tuple
+    _true_dim_action: Tuple
     beta: float
     def __init__(
         self,
         base_model: AbstractModel,
         transformations: Union[List[nn.Module], nn.ModuleList],
         beta: float = ...,
+        hallucinate_rewards: bool = ...,
     ) -> None: ...
     def forward(self, *args: Tensor, **kwargs: Any) -> TupleDistribution: ...
