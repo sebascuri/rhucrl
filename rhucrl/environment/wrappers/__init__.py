@@ -1,6 +1,7 @@
 """Python Script Template."""
 
 from .adversarial_wrapper import AdversarialWrapper
+from .hallucination_wrapper import HallucinationWrapper
 from .noisy_action_robust_wrapper import NoisyActionRobustWrapper
 from .probabilistic_action_robust_wrapper import ProbabilisticActionRobustWrapper
 from .reset_wrapper import ResetWrapper
