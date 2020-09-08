@@ -36,7 +36,7 @@ class SplitPolicy(AdversarialPolicy):
             dist_params=base_policy.dist_params,
         )
         self.base_policy = base_policy
-        self._protagonist = protagonist
+        self.protagonist = protagonist
 
     def forward(self, state: State) -> TupleDistribution:
         """Forward compute the policy."""
@@ -56,7 +56,7 @@ class SplitPolicy(AdversarialPolicy):
         if self.only_protagonist:
             return protagonist_mean, protagonist_chol
 
-        if self._protagonist:
+        if self.protagonist:
             antagonist_mean = antagonist_mean.detach()
             antagonist_chol = antagonist_chol.detach()
         else:
