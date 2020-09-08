@@ -1,6 +1,6 @@
 """Adversarial Pendulum."""
 
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 from gym.envs.classic_control.pendulum import PendulumEnv, angle_normalize
@@ -11,9 +11,11 @@ from .adversarial_wrapper import AdversarialWrapper
 class OtherPendulum(PendulumEnv):
     """Other Pendulum overrides step method of pendulum."""
 
-    def step(self, u):
+    state: np.ndarray
+
+    def step(self, u: np.array) -> Tuple[np.ndarray, float, bool, dict]:
         """Override step method of pendulum env."""
-        th, thdot = self.state  # th := theta
+        th, thdot = self.state  # type: Tuple[float, float]
 
         u = np.clip(u, -self.max_torque, self.max_torque)[0]
         self.last_u = u  # for rendering
@@ -35,8 +37,10 @@ class PendulumAdvEnv(AdversarialWrapper):
     """Adversarial Pendulum Environment."""
 
     env: OtherPendulum
+    attacks: List[str] = ["mass", "gravity"]
+    attack_mode: str
 
-    def __init__(self, alpha=0.5):
+    def __init__(self, alpha: float = 0.5, attack_mode: str = "mass"):
         antagonist_bounds = 2 * np.ones((1,))
         super().__init__(
             env=OtherPendulum(g=10.0),
@@ -44,11 +48,16 @@ class PendulumAdvEnv(AdversarialWrapper):
             antagonist_high=antagonist_bounds,
             alpha=alpha,
         )
+        if attack_mode not in self.attacks:
+            raise ValueError(f"{attack_mode} not in {self.attacks}.")
+        self.attack_mode = attack_mode
 
     def adversarial_step(
         self, original_action: np.ndarray, antagonist_action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """See AdversarialWrapper.step()."""
-        self.env.g = 10.0
-        self.env.m = 1.0 + antagonist_action[0]
+        if self.attack_mode == "gravity":
+            self.env.g = 10.0 + antagonist_action[0]
+        else:
+            self.env.m = 1.0 + antagonist_action[0]
         return self.env.step(original_action)
