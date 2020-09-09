@@ -3,7 +3,6 @@ from importlib import import_module
 from typing import Any, Optional, Type, TypeVar
 
 from rllib.dataset.datatypes import Observation
-from rllib.util.neural_networks.utilities import deep_copy_module
 
 from rhucrl.environment.adversarial_environment import AdversarialEnv
 from rhucrl.policy.split_policy import SplitPolicy
@@ -80,13 +79,8 @@ class ZeroSumAgent(AdversarialAgent):
             protagonist=False,
         )
 
-        for agent, policy in zip(
-            (protagonist_agent, antagonist_agent),
-            (protagonist_policy, antagonist_policy),
-        ):
-            agent.policy = policy
-            agent.algorithm.policy = policy
-            agent.algorithm.policy_target = deep_copy_module(policy)
+        protagonist_agent.set_policy(protagonist_policy)
+        antagonist_agent.set_policy(antagonist_policy)
 
         return super().default(
             environment,
