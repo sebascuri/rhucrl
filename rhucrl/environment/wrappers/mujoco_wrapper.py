@@ -1,7 +1,5 @@
 """Python Script Template."""
 
-from typing import Dict, List, Optional, Tuple
-
 import gym.error
 import numpy as np
 
@@ -16,7 +14,6 @@ try:
         HumanoidStandupEnv,
         InvertedDoublePendulumEnv,
         InvertedPendulumEnv,
-        MujocoEnv,
         PusherEnv,
         ReacherEnv,
         StrikerEnv,
@@ -30,11 +27,11 @@ try:
 
         def __init__(
             self,
-            env: MujocoEnv,
-            alpha: float = 5.0,
-            force_body_names: Optional[List[str]] = None,
-            new_mass: Optional[Dict[str, float]] = None,
-            new_friction: Optional[Dict[str, float]] = None,
+            env,
+            alpha=5.0,
+            force_body_names=None,
+            new_mass=None,
+            new_friction=None,
         ):
             force_body_names = [] if force_body_names is None else force_body_names
             self._antagonist_bindex = [
@@ -59,22 +56,14 @@ try:
                 alpha=alpha,
             )
 
-        def _antagonist_action_to_xfrc(self, antagonist_action: np.ndarray) -> None:
+        def _antagonist_action_to_xfrc(self, antagonist_action):
+            aa = antagonist_action
             for i, bindex in enumerate(self._antagonist_bindex):
                 self.sim.data.xfrc_applied[bindex] = np.array(
-                    [
-                        antagonist_action[i * 2],
-                        0.0,
-                        antagonist_action[i * 2 + 1],
-                        0.0,
-                        0.0,
-                        0.0,
-                    ]
+                    [aa[i * 2], 0.0, aa[i * 2 + 1], 0.0, 0.0, 0.0]
                 )
 
-        def adversarial_step(
-            self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
-        ) -> Tuple[np.ndarray, float, bool, dict]:
+        def adversarial_step(self, protagonist_action, antagonist_action):
             """See `AdversarialWrapper.adversarial_step()'."""
             self._antagonist_action_to_xfrc(antagonist_action)
             return self.env.step(protagonist_action)

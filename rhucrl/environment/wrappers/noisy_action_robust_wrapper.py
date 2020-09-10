@@ -50,10 +50,10 @@ class NoisyActionRobustWrapper(AdversarialWrapper):
     ) -> Tuple[np.ndarray, float, bool, dict]:
         """See `gym.Env.step()'."""
         assert (
-            len(protagonist_action) == self.protagonist_action_dim[0]
+            len(protagonist_action) == self.protagonist_dim_action[0]
         ), "Protagonist action has wrong dimensions."
         assert (
-            len(antagonist_action) == self.protagonist_action_dim[0]
+            len(antagonist_action) == self.protagonist_dim_action[0]
         ), "Adversarial action has wrong dimensions."
 
         # Choose action by averaging protagonist and antagonist actions.

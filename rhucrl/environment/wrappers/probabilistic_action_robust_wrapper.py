@@ -1,8 +1,6 @@
 """Base Class of an Adversarial Environments."""
-from typing import Tuple
 
 import numpy as np
-from gym import Env
 from gym.spaces import Box
 
 from .adversarial_wrapper import AdversarialWrapper
@@ -34,7 +32,7 @@ class ProbabilisticActionRobustWrapper(AdversarialWrapper):
     Action Robust Reinforcement Learning and Applications in Continuous Control. ICML.
     """
 
-    def __init__(self, env: Env, alpha: float) -> None:
+    def __init__(self, env, alpha):
         if not (0 <= alpha <= 1):
             raise ValueError(f"alpha must be in [0, 1] and {alpha} was given.")
         if not isinstance(env.action_space, Box):
@@ -46,15 +44,13 @@ class ProbabilisticActionRobustWrapper(AdversarialWrapper):
             alpha=alpha,
         )
 
-    def adversarial_step(
-        self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
-    ) -> Tuple[np.ndarray, float, bool, dict]:
+    def adversarial_step(self, protagonist_action, antagonist_action):
         """See `gym.Env.step()'."""
         assert (
-            len(protagonist_action) == self.protagonist_action_dim[0]
+            len(protagonist_action) == self.protagonist_dim_action[0]
         ), "Protagonist action has wrong dimensions."
         assert (
-            len(antagonist_action) == self.protagonist_action_dim[0]
+            len(antagonist_action) == self.protagonist_dim_action[0]
         ), "Antagonist action has wrong dimensions."
 
         # Choose action at random.
