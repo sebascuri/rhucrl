@@ -4,9 +4,7 @@ from gym.spaces import Box
 from .adversarial_environment import AdversarialEnv
 
 
-def adversarial_to_protagonist_environment(
-    environment: AdversarialEnv,
-) -> AdversarialEnv:
+def adversarial_to_protagonist_environment(environment):
     """Get the environment as seen by the protagonist."""
     protagonist_environment = AdversarialEnv(environment.env_name)
     protagonist_dim_action = environment.protagonist_dim_action[0]
@@ -19,9 +17,7 @@ def adversarial_to_protagonist_environment(
     return protagonist_environment
 
 
-def adversarial_to_antagonist_environment(
-    environment: AdversarialEnv,
-) -> AdversarialEnv:
+def adversarial_to_antagonist_environment(environment):
     """Get the environment as seen by the antagonist."""
     antagonist_environment = AdversarialEnv(environment.env_name)
     protagonist_dim_action = environment.protagonist_dim_action[0]

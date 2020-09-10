@@ -1,17 +1,12 @@
 """Base Class of an Adversarial Environments."""
-from typing import Tuple
-
-from gym.spaces import Box
 from rllib.environment import GymEnvironment
 
 
 class AdversarialEnv(GymEnvironment):
     """Class that wraps an adversarial environment."""
 
-    action_space: Box
-
     @property
-    def protagonist_dim_action(self) -> Tuple[int]:
+    def protagonist_dim_action(self):
         """Get protagonist action dimensions."""
         try:
             return self.env.protagonist_dim_action
@@ -19,9 +14,12 @@ class AdversarialEnv(GymEnvironment):
             return self.env.unwrapped.action_space.shape
 
     @property
-    def antagonist_dim_action(self) -> Tuple[int]:
+    def antagonist_dim_action(self):
         """Get antagonist action dimensions."""
-        return (self.env.action_space.shape[0] - self.protagonist_dim_action[0],)
+        try:
+            return self.env.antagonist_dim_action
+        except AttributeError:
+            return (self.env.action_space.shape[0] - self.protagonist_dim_action[0],)
 
     @property
     def alpha(self):
