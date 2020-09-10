@@ -29,15 +29,7 @@ class ZeroSumAgent(AdversarialAgent):
     def get_default_antagonist(
         environment: AdversarialEnv,
         base_policy: AbstractPolicy,
-        strong_antagonist: bool = ...,
         antagonist_name: str = ...,
         *args: Any,
         **kwargs: Any,
     ) -> AbstractAgent: ...
-    @staticmethod
-    def get_default_agents(
-        environment: AdversarialEnv,
-        strong_antagonist: bool = ...,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Tuple[AbstractAgent, AbstractAgent]: ...

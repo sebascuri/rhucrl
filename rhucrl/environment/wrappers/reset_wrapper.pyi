@@ -1,8 +1,8 @@
 """Reset Wrapper."""
 from typing import Any, Callable
 
-from rllib.dataset.datatypes import State
 from gym import Env, Wrapper
+from rllib.dataset.datatypes import State
 
 class ResetWrapper(Wrapper):
     """Wrap environment by changing the reset function."""

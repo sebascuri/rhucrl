@@ -1,9 +1,10 @@
 """Zero sum agent."""
 from importlib import import_module
 
-from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Observation
+from rllib.model import TransformedModel
 
+from rhucrl.model import HallucinatedModel
 from rhucrl.policy.split_policy import SplitPolicy
 
 from .adversarial_agent import AdversarialAgent
@@ -38,14 +39,44 @@ class ZeroSumAgent(AdversarialAgent):
         self.send_observations(protagonist_observation, antagonist_observation)
 
     @classmethod
-    def default(cls, environment, *args, **kwargs):
+    def default(
+        cls,
+        environment,
+        protagonist_dynamical_model=None,
+        antagonist_dynamical_model=None,
+        *args,
+        **kwargs,
+    ):
         """Get default Zero-Sum agent."""
-        p_agent, a_agent = ZeroSumAgent.get_default_agents(environment, *args, **kwargs)
+        p_agent = ZeroSumAgent.get_default_protagonist(
+            environment, dynamical_model=protagonist_dynamical_model, *args, **kwargs
+        )
+        sa_agent = ZeroSumAgent.get_default_antagonist(
+            environment, dynamical_model=antagonist_dynamical_model, *args, **kwargs
+        )
+        sa_agent.policy.base_policy = p_agent.policy.base_policy
+        sa_agent.set_policy(sa_agent.policy)
+        sa_agent.model_learning_algorithm = None
+
+        if isinstance(antagonist_dynamical_model, HallucinatedModel):
+            expected_model = TransformedModel(
+                antagonist_dynamical_model.base_model,
+                antagonist_dynamical_model.forward_transformations,
+            )
+            wa_agent = ZeroSumAgent.get_default_antagonist(
+                environment, dynamical_model=expected_model, *args, **kwargs
+            )
+            wa_agent.policy.base_policy = p_agent.policy.base_policy
+            wa_agent.set_policy(wa_agent.policy)
+            wa_agent.model_learning_algorithm = None
+        else:
+            wa_agent = None
 
         return super().default(
             environment,
             protagonist_agent=p_agent,
-            antagonist_agent=a_agent,
+            antagonist_agent=sa_agent,
+            weak_antagonist_agent=wa_agent,
             *args,
             **kwargs,
         )
@@ -67,15 +98,11 @@ class ZeroSumAgent(AdversarialAgent):
         return protagonist_agent
 
     @staticmethod
-    def get_default_antagonist(
-        environment,
-        base_policy,
-        strong_antagonist=True,
-        antagonist_name="SAC",
-        *args,
-        **kwargs,
-    ) -> AbstractAgent:
+    def get_default_antagonist(environment, antagonist_name="SAC", *args, **kwargs):
         """Get protagonist using RARL."""
+        strong_antagonist = isinstance(
+            kwargs.get("dynamical_model", None), HallucinatedModel
+        )
         antagonist_agent = getattr(
             import_module("rllib.agent"), f"{antagonist_name}Agent"
         ).default(
@@ -85,7 +112,7 @@ class ZeroSumAgent(AdversarialAgent):
             **kwargs,
         )
         antagonist_policy = SplitPolicy(
-            base_policy=base_policy,
+            base_policy=antagonist_agent.policy,
             protagonist_dim_action=environment.protagonist_dim_action,
             antagonist_dim_action=environment.antagonist_dim_action,
             protagonist=False,
@@ -94,16 +121,3 @@ class ZeroSumAgent(AdversarialAgent):
         )
         antagonist_agent.set_policy(antagonist_policy)
         return antagonist_agent
-
-    @staticmethod
-    def get_default_agents(environment, strong_antagonist=True, *args, **kwargs):
-        """Get default RARL agent."""
-        p_agent = ZeroSumAgent.get_default_protagonist(environment, *args, **kwargs)
-        a_agent = ZeroSumAgent.get_default_antagonist(
-            environment,
-            base_policy=p_agent.policy.base_policy,
-            strong_antagonist=strong_antagonist,
-            *args,
-            **kwargs,
-        )
-        return p_agent, a_agent

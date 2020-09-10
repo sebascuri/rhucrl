@@ -5,11 +5,14 @@ import torch
 from rllib.algorithms.mpc.abstract_solver import MPCSolver
 from rllib.util.neural_networks.utilities import repeat_along_dimension
 
+from rhucrl.model import HallucinatedModel
+
 
 def adversarial_solver(
     base_solver: MPCSolver,
     protagonist_dim_action: Tuple[int],
     antagonist_dim_action: Tuple[int],
+    strong_antagonist: bool = True,
 ) -> MPCSolver:
     """Get Adversarial MPC Shooting algorithm class."""
     #
@@ -17,22 +20,17 @@ def adversarial_solver(
     class AdversarialMPCShooting(base_solver.__class__):  # type: ignore
         """Adversarial MPC Shooting algorithm."""
 
-        def __init__(
-            self,
-            base_solver: MPCSolver,
-            protagonist_dim_action: Tuple[int],
-            antagonist_dim_action: Tuple[int],
-        ):
+        def __init__(self,):
             super().__init__(
                 **{**base_solver.__dict__, **dict(base_solver.named_modules())}
             )
             self.p_dim_action = protagonist_dim_action
             self.a_dim_action = antagonist_dim_action
-            self.h_dim_aciton = (
-                self.dynamical_model.dim_action[0]
-                - protagonist_dim_action[0]
-                - antagonist_dim_action[0],
-            )
+            if isinstance(self.dynamical_model, HallucinatedModel):
+                self.h_dim_action = self.dynamical_model.dim_state
+            else:
+                self.h_dim_action = (0,)
+            self.strong_antagonist = strong_antagonist
 
         def forward(self, state):
             """Return action that solves the MPC problem."""
@@ -52,11 +50,11 @@ def adversarial_solver(
 
                 # Be optimistic about the model by maximizing h_action.
                 p_action, _, h_action = max_actions.split(
-                    [self.p_dim_action[0], self.a_dim_action[0], self.h_dim_aciton[0]],
+                    [self.p_dim_action[0], self.a_dim_action[0], self.h_dim_action[0]],
                     -1,
                 )
                 _, a_action, _ = min_actions.split(
-                    [self.p_dim_action[0], self.a_dim_action[0], self.h_dim_aciton[0]],
+                    [self.p_dim_action[0], self.a_dim_action[0], self.h_dim_action[0]],
                     -1,
                 )
 
@@ -64,9 +62,14 @@ def adversarial_solver(
 
                 self.update_sequence_generation(elite_actions)
 
+            if not self.strong_antagonist:  # Early stop weak antagonists.
+                if self.clamp:
+                    return self.mean.clamp(-1.0, 1.0)
+                return self.mean
             p_action = repeat_along_dimension(
                 self.mean[..., : self.p_dim_action[0]], number=self.num_samples, dim=-2
             )
+            # min_{antagonist} min_{hallucination}
             for _ in range(self.num_iter):
                 action_sequence = self.get_candidate_action_sequence()
 
@@ -81,8 +84,4 @@ def adversarial_solver(
                 return self.mean.clamp(-1.0, 1.0)
             return self.mean
 
-    return AdversarialMPCShooting(
-        base_solver=base_solver,
-        protagonist_dim_action=protagonist_dim_action,
-        antagonist_dim_action=antagonist_dim_action,
-    )
+    return AdversarialMPCShooting()

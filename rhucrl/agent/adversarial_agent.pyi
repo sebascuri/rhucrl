@@ -1,10 +1,15 @@
 """Python Script Template."""
 from abc import ABCMeta
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Type, TypeVar
 
 from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Observation
+from rllib.model import AbstractModel
 from torch import Tensor
+
+from rhucrl.environment import AdversarialEnv
+
+T = TypeVar("T", bound="AdversarialAgent")
 
 class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     protagonist_agent: AbstractAgent
@@ -34,7 +39,16 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     def train_only_antagonist(self) -> None: ...
     def train_only_protagonist(self) -> None: ...
     def only_protagonist(self, val: bool = True) -> None: ...
-    def save(self, filename: str, directory: Optional[str] = ...): ...
+    def save(self, filename: str, directory: Optional[str] = ...) -> None: ...
     def load_protagonist(self, path: str) -> None: ...
     def load_antagonist(self, path: str) -> None: ...
     def load_weak_antagonist(self, path: str) -> None: ...
+    @classmethod
+    def default(
+        cls: Type[T],
+        environment: AdversarialEnv,
+        protagonist_dynamical_model: Optional[AbstractModel] = ...,
+        antagonist_dynamical_model: Optional[AbstractModel] = ...,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T: ...

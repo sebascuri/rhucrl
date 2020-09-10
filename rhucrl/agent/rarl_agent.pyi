@@ -5,7 +5,6 @@ from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Action
 
 from rhucrl.environment.adversarial_environment import AdversarialEnv
-
 from rhucrl.policy.joint_policy import JointPolicy
 
 from .adversarial_agent import AdversarialAgent
@@ -29,7 +28,3 @@ class RARLAgent(AdversarialAgent):
         *args: Any,
         **kwargs: Any,
     ) -> AbstractAgent: ...
-    @staticmethod
-    def get_default_agents(
-        environment: AdversarialEnv, *args: Any, **kwargs: Any
-    ) -> Tuple[AbstractAgent, AbstractAgent]: ...

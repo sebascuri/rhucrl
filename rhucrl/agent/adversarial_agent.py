@@ -28,7 +28,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         protagonist_agent,
         antagonist_agent,
         weak_antagonist_agent=None,
-        tensorboard=False,
+        tensorboard=True,
         *args,
         **kwargs,
     ):
@@ -154,3 +154,15 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     def load_weak_antagonist(self, path):
         """Load weak antagonist agent from path."""
         self.weak_antagonist_agent.load(path)
+
+    @classmethod
+    def default(
+        cls,
+        environment,
+        protagonist_dynamical_model=None,
+        antagonist_dynamical_model=None,
+        *args,
+        **kwargs,
+    ):
+        """Get default agent."""
+        return super().default(environment, *args, **kwargs)

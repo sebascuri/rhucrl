@@ -32,8 +32,10 @@ class OtherPendulum(PendulumEnv):
 class PendulumAdvEnv(AdversarialWrapper):
     """Adversarial Pendulum Environment."""
 
+    attacks = ["mass", "gravity"]
+
     def __init__(self, alpha=0.5, attack_mode="mass"):
-        antagonist_bounds = 2 * np.ones((1,))
+        antagonist_bounds = 2 * np.ones((2,))
         super().__init__(
             env=OtherPendulum(g=10.0),
             antagonist_low=-antagonist_bounds,
@@ -49,5 +51,5 @@ class PendulumAdvEnv(AdversarialWrapper):
         if self.attack_mode == "gravity":
             self.env.g = 10.0 + antagonist_action[0]
         else:
-            self.env.m = 1.0 + antagonist_action[0]
+            self.env.m = 1.0 + antagonist_action[1]
         return self.env.step(original_action)

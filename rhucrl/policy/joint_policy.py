@@ -25,7 +25,6 @@ class JointPolicy(AdversarialPolicy):
     ) -> None:
         assert protagonist_policy.deterministic == antagonist_policy.deterministic
         assert protagonist_policy.dim_state == antagonist_policy.dim_state
-        assert protagonist_policy.dist_params == antagonist_policy.dist_params
         super().__init__(
             *args,
             dim_state=protagonist_policy.dim_state,

@@ -17,7 +17,7 @@ class PendulumAdvEnv(AdversarialWrapper):
     """Adversarial Pendulum Environment."""
 
     env: OtherPendulum
-    attacks: List[str] = ["mass", "gravity"]
+    attacks: List[str] = ...
     attack_mode: str
     def __init__(self, alpha: float = ..., attack_mode: str = ...) -> None: ...
     def adversarial_step(

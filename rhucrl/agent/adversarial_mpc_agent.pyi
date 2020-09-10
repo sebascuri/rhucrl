@@ -3,6 +3,7 @@ from typing import Any
 
 from rllib.algorithms.mpc.abstract_solver import MPCSolver
 from rllib.policy import MPCPolicy
+
 from .adversarial_agent import AdversarialAgent
 
 class AdversarialMPCAgent(AdversarialAgent):

@@ -1,18 +1,10 @@
 """Python Script Template."""
 import argparse
-import importlib
-from typing import Any
 
 from gym.envs import registry
 from rllib.agent import AGENTS as BASE_AGENTS
 
 from rhucrl.agent import AGENTS as ROBUST_AGENTS
-from rhucrl.agent.adversarial_agent import AdversarialAgent
-from rhucrl.environment import AdversarialEnv
-from rhucrl.environment.wrappers import (
-    NoisyActionRobustWrapper,
-    ProbabilisticActionRobustWrapper,
-)
 
 
 def get_command_line_parser():
@@ -34,14 +26,14 @@ def get_command_line_parser():
         choices=ROBUST_AGENTS,
     )
     parser.add_argument(
-        "--protagonist",
+        "--protagonist-name",
         default="SAC",
         type=str,
         help="Protagonist agent name.",
         choices=BASE_AGENTS,
     )
     parser.add_argument(
-        "--antagonist",
+        "--antagonist-name",
         default=None,
         type=str,
         help="Antagonist agent name.",
@@ -72,34 +64,6 @@ def get_command_line_parser():
         "--eval-frequency", type=int, default=20, help="Evaluate every n episodes."
     )
     parser.add_argument("--render", action="store_true", default=False)
+    parser.add_argument("--hallucinate", action="store_true", default=False)
 
     return parser
-
-
-def get_environment(arguments: argparse.Namespace, **kwargs: Any) -> AdversarialEnv:
-    """Get environment."""
-    if arguments.adversarial_wrapper == "noisy_action":
-        environment = AdversarialEnv(arguments.environment, seed=arguments.seed)
-        environment.add_wrapper(NoisyActionRobustWrapper, alpha=arguments.alpha)
-    elif arguments.adversarial_wrapper == "probabilistic_action":
-        environment = AdversarialEnv(arguments.environment, seed=arguments.seed)
-        environment.add_wrapper(ProbabilisticActionRobustWrapper, alpha=arguments.alpha)
-    else:
-        environment = AdversarialEnv(
-            arguments.environment, seed=arguments.seed, alpha=arguments.alpha, **kwargs
-        )
-    return environment
-
-
-def get_agent(
-    arguments: argparse.Namespace, environment: AdversarialEnv, **kwargs: Any
-) -> AdversarialAgent:
-    """Get default agent."""
-    agent_module = importlib.import_module("rhucrl.agent")
-    agent = getattr(agent_module, f"{arguments.agent}Agent").default(
-        environment,
-        exploration_steps=arguments.exploration_steps,
-        exploration_episodes=arguments.exploration_episodes,
-        **kwargs,
-    )
-    return agent
