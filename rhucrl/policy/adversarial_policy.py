@@ -1,72 +1,44 @@
 """Python Script Template."""
-from typing import Any, Tuple
+from abc import ABCMeta
 
-import torch
-from rllib.dataset.datatypes import State, TupleDistribution
 from rllib.policy import AbstractPolicy
-from rllib.util.neural_networks.utilities import get_batch_size
 
 
-class AdversarialPolicy(AbstractPolicy):
+class AdversarialPolicy(AbstractPolicy, metaclass=ABCMeta):
     """Given a protagonist and an antagonist policy, combine to give a joint policy."""
-
-    protagonist_dim_action: Tuple[int]
-    antagonist_dim_action: Tuple[int]
-
-    _only_protagonist: bool
 
     def __init__(
         self,
-        dim_state: Tuple[int],
-        protagonist_dim_action: Tuple[int],
-        antagonist_dim_action: Tuple[int],
-        *args: Any,
-        **kwargs: Any,
+        protagonist_dim_action=(),
+        antagonist_dim_action=(),
+        protagonist=True,
+        weak_antagonist=False,
+        strong_antagonist=False,
+        *args,
+        **kwargs,
     ) -> None:
-        dim_action = protagonist_dim_action[0] + antagonist_dim_action[0]
 
-        super().__init__(dim_state=dim_state, dim_action=(dim_action,), *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.protagonist_dim_action = protagonist_dim_action
         self.antagonist_dim_action = antagonist_dim_action
+
+        self.protagonist = protagonist
+        self.weak_antagonist = weak_antagonist
+        self.strong_antagonist = strong_antagonist
+        assert protagonist ^ weak_antagonist ^ strong_antagonist
 
         self._only_protagonist = False
 
     @property
-    def only_protagonist(self) -> bool:
+    def only_protagonist(self):
         """Return flag that indicates that only protagonist is used."""
         return self._only_protagonist
 
     @only_protagonist.setter
-    def only_protagonist(self, only_protagonist: bool) -> None:
+    def only_protagonist(self, only_protagonist):
         """Set if only the protagonist is used to compute the policy."""
         self._only_protagonist = only_protagonist
 
-    def stack_distributions(
-        self,
-        protagonist_mean: torch.Tensor,
-        protagonist_chol: torch.Tensor,
-        antagonist_mean: torch.Tensor,
-        antagonist_chol: torch.Tensor,
-    ) -> TupleDistribution:
-        """Stack Protagonist and Adversarial distributions."""
-        if self.only_protagonist:
-            return protagonist_mean, protagonist_chol
-
-        bs = get_batch_size(protagonist_mean, self.protagonist_dim_action)
-        mean = torch.cat((protagonist_mean, antagonist_mean), dim=-1)
-        if self.deterministic:
-            chol = torch.zeros(bs + self.dim_action)
-        else:
-            chol = torch.zeros(bs + self.dim_action + self.dim_action)
-            chol[
-                ..., : self.protagonist_dim_action[0], : self.protagonist_dim_action[0]
-            ] = protagonist_chol
-            chol[
-                ..., self.protagonist_dim_action[0] :, self.protagonist_dim_action[0] :
-            ] = antagonist_chol
-
-        return mean, chol
-
-    def forward(self, state: State) -> TupleDistribution:
+    def forward(self, state):
         """Forward compute the policy."""
         raise NotImplementedError

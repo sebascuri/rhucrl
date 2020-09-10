@@ -1,10 +1,9 @@
 """Python Script Template."""
-from typing import Any, Optional, Tuple, Type, TypeVar
 
-from rllib.dataset.datatypes import State, TupleDistribution
-from rllib.policy import AbstractPolicy, NNPolicy
+import torch
+from rllib.policy import NNPolicy
+from rllib.util.neural_networks.utilities import deep_copy_module
 
-from rhucrl.environment.adversarial_environment import AdversarialEnv
 from rhucrl.environment.utilities import (
     adversarial_to_antagonist_environment,
     adversarial_to_protagonist_environment,
@@ -12,70 +11,78 @@ from rhucrl.environment.utilities import (
 
 from .adversarial_policy import AdversarialPolicy
 
-T = TypeVar("T", bound="SplitPolicy")
-
 
 class SplitPolicy(AdversarialPolicy):
     """Split a policy into protagonist and antagonist policies."""
 
-    base_policy: AbstractPolicy
-
     def __init__(
         self,
-        base_policy: AbstractPolicy,
-        protagonist_dim_action: Tuple[int],
-        antagonist_dim_action: Tuple[int],
-        protagonist: bool = True,
-    ) -> None:
+        base_policy,
+        protagonist_dim_action,
+        antagonist_dim_action,
+        *args,
+        **kwargs,
+    ):
         super().__init__(
-            dim_state=base_policy.dim_state,
             protagonist_dim_action=protagonist_dim_action,
             antagonist_dim_action=antagonist_dim_action,
+            dim_state=base_policy.dim_state,
+            dim_action=base_policy.dim_action,
             deterministic=base_policy.deterministic,
             action_scale=base_policy.action_scale,
             dist_params=base_policy.dist_params,
+            *args,
+            **kwargs,
         )
         self.base_policy = base_policy
-        self.protagonist = protagonist
+        self.strong_antagonist_policy = deep_copy_module(self.base_policy)
 
-    def forward(self, state: State) -> TupleDistribution:
+    def forward(self, state):
         """Forward compute the policy."""
-        joint_mean, joint_chol = self.base_policy(state)
-
-        protagonist_mean = joint_mean[..., : self.protagonist_dim_action[0]]
-        antagonist_mean = joint_mean[..., self.protagonist_dim_action[0] :]
-
-        protagonist_chol = joint_chol[
-            ..., : self.protagonist_dim_action[0], : self.protagonist_dim_action[0]
-        ]
-
-        antagonist_chol = joint_chol[
-            ..., self.protagonist_dim_action[0] :, self.protagonist_dim_action[0] :
-        ]
-
+        p_dim = self.protagonist_dim_action[0]
+        a_dim = self.antagonist_dim_action[0]
+        r_dim = p_dim + a_dim
+        pwa_mean, pwa_scale_tril = self.base_policy(state)
         if self.only_protagonist:
-            return protagonist_mean, protagonist_chol
+            return pwa_mean, pwa_scale_tril
+
+        pwa_std = pwa_scale_tril.diagonal(dim1=-1, dim2=-2)
+        p_mean, p_std = pwa_mean[..., :p_dim], pwa_std[..., :p_dim]
+
+        if self.protagonist or self.weak_antagonist:
+            a_mean, a_std = pwa_mean[..., p_dim:r_dim], pwa_std[..., p_dim:r_dim]
+            h_mean, h_std = pwa_mean[..., r_dim:], pwa_std[..., r_dim:]
+        else:
+            sa_mean, sa_scale_tril = self.strong_antagonist_policy(state)
+            sa_std = sa_scale_tril.diagonal(dim1=-1, dim2=-2)
+            a_mean, a_std = sa_mean[..., p_dim:r_dim], sa_std[..., p_dim:r_dim]
+            h_mean, h_std = sa_mean[..., r_dim:], sa_std[..., r_dim:]
 
         if self.protagonist:
-            antagonist_mean = antagonist_mean.detach()
-            antagonist_chol = antagonist_chol.detach()
+            a_mean, a_std = a_mean.detach(), a_std.detach()
+        elif self.weak_antagonist:
+            p_mean, p_std = p_mean.detach(), p_std.detach()
+            h_mean, h_std = h_mean.detach(), h_std.detach()
+        elif self.strong_antagonist:
+            p_mean, p_std = p_mean.detach(), p_std.detach()
         else:
-            protagonist_mean = protagonist_mean.detach()
-            protagonist_chol = protagonist_chol.detach()
+            raise NotImplementedError
 
-        return self.stack_distributions(
-            protagonist_mean, protagonist_chol, antagonist_mean, antagonist_chol
-        )
+        mean = torch.cat((p_mean, a_mean, h_mean), dim=-1)
+        std = torch.cat((p_std, a_std, h_std), dim=-1)
+        return mean, std.diag_embed()
 
     @classmethod
     def default(
-        cls: Type[T],
-        environment: AdversarialEnv,
-        base_policy: Optional[AbstractPolicy] = None,
-        protagonist: bool = True,
-        *args: Any,
-        **kwargs: Any,
-    ) -> T:
+        cls,
+        environment,
+        base_policy=None,
+        protagonist=True,
+        weak_antagonist=False,
+        strong_antagonist=False,
+        *args,
+        **kwargs,
+    ):
         """Get default policy."""
         if protagonist:
             derived_env = adversarial_to_protagonist_environment(environment)
@@ -89,5 +96,7 @@ class SplitPolicy(AdversarialPolicy):
             base_policy,
             environment.protagonist_dim_action,
             environment.antagonist_dim_action,
-            protagonist,
+            protagonist=protagonist,
+            weak_antagonist=weak_antagonist,
+            strong_antagonist=strong_antagonist,
         )

@@ -1,11 +1,8 @@
 """Python Script Template."""
-from typing import Any, Type, TypeVar
 
 import torch
-from rllib.dataset.datatypes import State, TupleDistribution
-from rllib.policy import AbstractPolicy, NNPolicy
+from rllib.policy import NNPolicy
 
-from rhucrl.environment.adversarial_environment import AdversarialEnv
 from rhucrl.environment.utilities import (
     adversarial_to_antagonist_environment,
     adversarial_to_protagonist_environment,
@@ -13,44 +10,77 @@ from rhucrl.environment.utilities import (
 
 from .adversarial_policy import AdversarialPolicy
 
-T = TypeVar("T", bound="JointPolicy")
-
 
 class JointPolicy(AdversarialPolicy):
     """Given a protagonist and an antagonist policy, combine to give a joint policy."""
 
-    protagonist_policy: AbstractPolicy
-    antagonist_policy: AbstractPolicy
-
     def __init__(
-        self, protagonist_policy: AbstractPolicy, antagonist_policy: AbstractPolicy
+        self,
+        dim_action,
+        action_scale,
+        protagonist_policy,
+        antagonist_policy,
+        *args,
+        **kwargs,
     ) -> None:
+        assert protagonist_policy.deterministic == antagonist_policy.deterministic
+        assert protagonist_policy.dim_state == antagonist_policy.dim_state
+        assert protagonist_policy.dist_params == antagonist_policy.dist_params
         super().__init__(
+            *args,
             dim_state=protagonist_policy.dim_state,
+            dim_action=dim_action,
             protagonist_dim_action=protagonist_policy.dim_action,
             antagonist_dim_action=antagonist_policy.dim_action,
             deterministic=protagonist_policy.deterministic,
-            action_scale=torch.cat(
-                (protagonist_policy.action_scale, antagonist_policy.action_scale)
-            ),
+            action_scale=action_scale,
             dist_params=protagonist_policy.dist_params,
-        )
+            **kwargs,
+        )  # type: ignore
         self.protagonist_policy = protagonist_policy
         self.antagonist_policy = antagonist_policy
 
-    def forward(self, state: State) -> TupleDistribution:
+    def forward(self, state):
         """Forward compute the policy."""
-        protagonist_mean, protagonist_chol = self.protagonist_policy(state)
-        antagonist_mean, antagonist_chol = self.antagonist_policy(state)
+        p_dim = self.protagonist_dim_action[0]
+        a_dim = self.antagonist_dim_action[0]
 
-        return self.stack_distributions(
-            protagonist_mean, protagonist_chol, antagonist_mean, antagonist_chol
-        )
+        p_mean, p_scale_tril = self.protagonist_policy(state)
+        if self.only_protagonist:
+            return p_mean, p_scale_tril
+
+        a_mean, a_scale_tril = self.antagonist_policy(state)
+
+        p_std = p_scale_tril.diagonal(dim1=-1, dim2=-2)
+        a_std = a_scale_tril.diagonal(dim1=-1, dim2=-2)
+
+        if self.protagonist or self.weak_antagonist:
+            h_mean = p_mean[..., p_dim:]
+            h_std = p_std[..., p_dim:]
+        elif self.strong_antagonist:
+            h_mean = a_mean[..., a_dim:]
+            h_std = a_std[..., a_dim:]
+        else:
+            raise NotImplementedError
+
+        p_mean = p_mean[..., :p_dim]
+        p_std = p_std[..., :p_dim]
+        a_mean, a_std = a_mean[..., :a_dim], a_std[..., :a_dim]
+
+        mean = torch.cat((p_mean, a_mean, h_mean), dim=-1)
+        std = torch.cat((p_std, a_std, h_std), dim=-1)
+        return mean, std.diag_embed()
 
     @classmethod
     def default(
-        cls: Type[T], environment: AdversarialEnv, *args: Any, **kwargs: Any
-    ) -> T:
+        cls,
+        environment,
+        protagonist=True,
+        weak_antagonist=False,
+        strong_antagonist=False,
+        *args,
+        **kwargs,
+    ):
         """Get default policy."""
         protagonist_env = adversarial_to_protagonist_environment(environment)
         protagonist_policy = NNPolicy.default(protagonist_env, *args, **kwargs)
@@ -58,4 +88,12 @@ class JointPolicy(AdversarialPolicy):
         antagonist_env = adversarial_to_antagonist_environment(environment)
         antagonist_policy = NNPolicy.default(antagonist_env, *args, **kwargs)
 
-        return cls(protagonist_policy, antagonist_policy)
+        return cls(
+            dim_action=environment.dim_action,
+            action_scale=environment.action_scale,
+            protagonist_policy=protagonist_policy,
+            antagonist_policy=antagonist_policy,
+            protagonist=protagonist,
+            weak_antagonist=weak_antagonist,
+            strong_antagonist=strong_antagonist,
+        )
