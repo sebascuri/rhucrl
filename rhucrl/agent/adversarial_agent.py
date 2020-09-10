@@ -1,105 +1,136 @@
 """Python Script Template."""
 from abc import ABCMeta
-from typing import Optional
 
 from rllib.agent import AbstractAgent
-from rllib.dataset.datatypes import Observation
 from rllib.util.logger import Logger
-from torch import Tensor
 
 
 class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
-    """Adversarial Agent."""
+    r"""Adversarial Agent.
 
-    def __init__(self, protagonist_agent, antagonist_agent, *args, **kwargs):
+    Protagonist/Weak-Antagonist optimizes
+        \max_{\pi_p} \min_{\pi_a} J(\pi_p, \pi_a)
+
+    Strong-Antagonist optimizes
+        \min_{\pi_a} J(\pi_p.detach(), \pi_a)
+
+    In most cases Weak-Antagonist=Strong-Antagonist, except in RH-UCRL. In RH-UCRL
+
+     Protagonist/Weak-Antagonist optimizes
+        \max_{\pi_p} \min_{\pi_a} \max_{\pi_h} J(\pi_p, \pi_a, \pi_h)
+
+    Strong-Antagonist optimizes
+        \min_{\pi_a} \min_{\pi_h} J(\pi_p.detach(), \pi_a)
+    """
+
+    def __init__(
+        self,
+        protagonist_agent,
+        antagonist_agent,
+        weak_antagonist_agent=None,
+        tensorboard=False,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.protagonist_agent = protagonist_agent
         self.antagonist_agent = antagonist_agent
         self.protagonist_agent.logger.delete_directory()
         self.protagonist_agent.logger = Logger(
-            f"{self.logger.writer.logdir[5:]}/Protagonist",
-            tensorboard=kwargs.get("tensorboard", False),
+            f"{self.logger.writer.logdir[5:]}/Protagonist", tensorboard=tensorboard
         )
         self.antagonist_agent.logger.delete_directory()
         self.antagonist_agent.logger = Logger(
-            f"{self.logger.writer.logdir[5:]}/Antagonist",
-            tensorboard=kwargs.get("tensorboard", False),
+            f"{self.logger.writer.logdir[5:]}/Antagonist", tensorboard=tensorboard
         )
 
-    def send_observations(
-        self, protagonist_observation: Observation, antagonist_observation: Observation
-    ) -> None:
+        self.agents = [self.protagonist_agent, self.antagonist_agent]
+        self.antagonist_agents = [self.antagonist_agent]
+        self.weak_antagonist_agent = weak_antagonist_agent
+        if weak_antagonist_agent is not None:
+            self.weak_antagonist_agent.logger.delete_directory()
+            self.weak_antagonist_agent.logger = Logger(
+                f"{self.logger.writer.logdir[5:]}/WeakAntagonist",
+                tensorboard=tensorboard,
+            )
+            self.agents.append(self.weak_antagonist_agent)
+            self.antagonist_agents.append(self.weak_antagonist_agent)
+
+    def send_observations(self, protagonist_observation, antagonist_observation):
         """Send the observations to each player."""
         self.protagonist_agent.observe(protagonist_observation)
-        self.antagonist_agent.observe(antagonist_observation)
+        for agent in self.antagonist_agents:
+            agent.observe(antagonist_observation)
 
-    def __str__(self) -> str:
+    def __str__(self):
         """Generate string to parse the agent."""
         str_ = super().__str__()
-        str_ += str(self.protagonist_agent)
-        str_ += str(self.antagonist_agent)
+        for agent in self.agents:
+            str_ += str(agent)
         return str_
 
-    def start_episode(self) -> None:
+    def start_episode(self):
         """Start episode of both players."""
         super().start_episode()
-        self.protagonist_agent.start_episode()
-        self.antagonist_agent.start_episode()
+        for agent in self.agents:
+            agent.start_episode()
 
-    def end_episode(self) -> None:
+    def end_episode(self):
         """End episode of both players."""
-        self.protagonist_agent.end_episode()
-        self.antagonist_agent.end_episode()
+        for agent in self.agents:
+            agent.end_episode()
         super().end_episode()
 
-    def end_interaction(self) -> None:
+    def end_interaction(self):
         """End interaction of both players."""
-        self.protagonist_agent.end_interaction()
-        self.antagonist_agent.end_interaction()
+        for agent in self.agents:
+            agent.end_interaction()
         super().end_interaction()
 
-    def set_goal(self, goal: Optional[Tensor]) -> None:
+    def set_goal(self, goal):
         """Set the goal to both players."""
-        self.protagonist_agent.set_goal(goal)
-        self.antagonist_agent.set_goal(goal)
+        for agent in self.agents:
+            agent.set_goal(goal)
 
-    def train(self, val: bool = True) -> None:
+    def train(self, val=True):
         """Set training mode.
 
         In eval mode, both the protagonist and the antagonist learn.
         """
-        self.protagonist_agent.train(val)
-        self.antagonist_agent.train(val)
+        for agent in self.agents:
+            agent.train(val)
         super().train(val)
 
-    def eval(self, val: bool = True) -> None:
+    def eval(self, val=True):
         """Set evaluation mode.
 
         In eval mode, both the protagonist and the antagonist do not learn.
         """
-        self.protagonist_agent.eval(val)
-        self.antagonist_agent.eval(val)
+        for agent in self.agents:
+            agent.eval(val)
         super().eval(val)
 
-    def train_only_antagonist(self) -> None:
+    def train_only_antagonist(self):
         """Set into train antagonist mode.
 
         In this training mode, the protagonist is kept fixed, and the antagonist learns
         to hinder the protagonist.
         """
         self.protagonist_agent.eval()
-        self.antagonist_agent.train()
+        for agent in self.antagonist_agents:
+            agent.train()
 
-    def train_only_protagonist(self) -> None:
+    def train_only_protagonist(self):
         """Set into train protagonist mode.
 
         In this training mode, the antagonist is kept fixed, and the protagonist learns
         to hinder the antagonist.
         """
         self.protagonist_agent.train()
-        self.antagonist_agent.eval()
+        for agent in self.antagonist_agents:
+            agent.eval()
 
-    def only_protagonist(self, val: bool = True) -> None:
+    def only_protagonist(self, val=True):
         """Evaluate the protagonist using only the protagonist policy."""
         self.policy.only_protagonist = val
 
@@ -107,6 +138,10 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         """Save both agents."""
         self.protagonist_agent.save("Protagonist" + filename, directory=directory)
         self.antagonist_agent.save("Antagonist" + filename, directory=directory)
+        if self.weak_antagonist_agent is not None:
+            self.weak_antagonist_agent.save(
+                "Antagonist" + filename, directory=directory
+            )
 
     def load_protagonist(self, path):
         """Load protagonist agent from path."""
@@ -114,4 +149,8 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
     def load_antagonist(self, path):
         """Load antagonist agent from path."""
-        self.protagonist_agent.load(path)
+        self.antagonist_agent.load(path)
+
+    def load_weak_antagonist(self, path):
+        """Load weak antagonist agent from path."""
+        self.weak_antagonist_agent.load(path)

@@ -20,3 +20,6 @@ class PendulumAdvEnv(AdversarialWrapper):
     attacks: List[str] = ["mass", "gravity"]
     attack_mode: str
     def __init__(self, alpha: float = ..., attack_mode: str = ...) -> None: ...
+    def adversarial_step(
+        self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
+    ) -> Tuple[np.ndarray, float, bool, dict]: ...
