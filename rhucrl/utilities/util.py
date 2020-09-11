@@ -6,32 +6,43 @@ from rllib.model import TransformedModel
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
     HallucinationWrapper,
+    MujocoAdversarialWrapper,
     NoisyActionRobustWrapper,
     ProbabilisticActionRobustWrapper,
 )
 from rhucrl.model import HallucinatedModel
 
 
-def get_environment(environment, adversarial_wrapper=None, alpha=0.1, seed=0, **kwargs):
-    """Get environment."""
-    if adversarial_wrapper == "noisy_action":
-        environment = AdversarialEnv(environment, seed=seed, **kwargs)
+def wrap_adversarial_environment(
+    environment: AdversarialEnv, wrapper_name: str, alpha: float, force_body_names=None
+):
+    """Wrap environment with an adversarial wrapper."""
+    if wrapper_name == "noisy_action":
         environment.add_wrapper(NoisyActionRobustWrapper, alpha=alpha)
-    elif adversarial_wrapper == "probabilistic_action":
-        environment = AdversarialEnv(environment, seed=seed, **kwargs)
+    elif wrapper_name == "probabilistic_action":
         environment.add_wrapper(ProbabilisticActionRobustWrapper, alpha=alpha)
+    elif wrapper_name == "external_force":
+        environment.add_wrapper(
+            MujocoAdversarialWrapper, alpha=alpha, force_body_names=force_body_names
+        )
     else:
-        environment = AdversarialEnv(environment, seed=seed, alpha=alpha, **kwargs)
+        raise NotImplementedError(f"{wrapper_name} not implemented.")
     return environment
 
 
-def get_default_models(environment, hallucinate=False, strong_antagonist=True):
+def get_default_models(
+    environment, known_model=None, hallucinate=False, strong_antagonist=True
+):
     """Get default protagonist/antagonist models.
 
     Notes
     -----
     This has a side effect on the environment.
     """
+    if known_model is not None:
+        expected_model = TransformedModel(known_model, [])
+        return expected_model, expected_model
+
     if hallucinate:
         dynamical_model = HallucinatedModel.default(environment)
         environment.add_wrapper(HallucinationWrapper)
