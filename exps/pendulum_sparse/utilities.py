@@ -2,11 +2,18 @@
 
 import numpy as np
 import torch
-from gym.envs.classic_control.pendulum import PendulumEnv, angle_normalize
 from rllib.model import AbstractModel
 from rllib.reward.state_action_reward import StateActionReward
+from rllib.util.utilities import get_backend
 
-from rhucrl.environment.wrappers import AdversarialWrapper
+
+def pendulum_reward(state, action, next_state=None, info=None):
+    """Calculate the pendulum reward."""
+    bk = get_backend(state)
+    th, thdot = bk.arctan2(state[..., 1], state[..., 0]), state[..., 2]
+    action = action[..., 0]
+
+    return -(th ** 2 + 0.1 * thdot ** 2 + 0.001 * (action ** 2))
 
 
 def pendulum_reset(wrapper, **kwargs):
@@ -21,7 +28,7 @@ class PendulumModel(AbstractModel):
     """Pendulum Model."""
 
     def __init__(self, alpha, attack_mode="gravity"):
-        super().__init__(dim_state=(3,), dim_action=(3,))
+        super().__init__(dim_state=(3,), dim_action=(2,))
         self.max_speed = 8
         self.max_torque = 2.0
         self.alpha = alpha
@@ -35,16 +42,18 @@ class PendulumModel(AbstractModel):
         """Compute Next State distribution."""
         th, thdot = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
 
-        action = action[..., 0]
+        p_action = action[..., 0]
+        a_action = action[..., 1]
+        action = p_action
 
         g = 10.0
         m = 1.0
         length = 1.0
         dt = 0.05
         if self.attack_mode == "gravity":
-            g = 10.0 * (1 + action[..., 1])
+            g += a_action
         else:
-            m = 1.0 * (1 + action[..., 2])
+            m += a_action
 
         u = torch.clamp(action, -self.max_torque, self.max_torque)
 
@@ -81,55 +90,3 @@ class PendulumReward(StateActionReward):
         """Compute reward associated with state dynamics."""
         th, thdot = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
         return -(th ** 2 + 0.1 * thdot ** 2)
-
-
-class PendulumV1Env(PendulumEnv):
-    """Other Pendulum overrides step method of pendulum.
-
-    It uses properties intead of hard-coded values.
-    """
-
-    def step(self, u):
-        """Override step method of pendulum env."""
-        th, thdot = self.state
-
-        u = np.clip(u, -self.max_torque, self.max_torque)[0]
-        self.last_u = u  # for rendering
-        costs = angle_normalize(th) ** 2 + 0.1 * thdot ** 2 + 0.001 * (u ** 2)
-
-        i = self.m * self.l ** 2
-        newthdot = (
-            thdot
-            + (-3 * self.g / (2 * self.l) * np.sin(th + np.pi) + 3.0 / i * u) * self.dt
-        )
-        newth = th + newthdot * self.dt
-        newthdot = np.clip(newthdot, -self.max_speed, self.max_speed)
-
-        self.state = np.array([newth, newthdot])
-        return self._get_obs(), -costs, False, {}
-
-
-class AdversarialPendulumWrapper(AdversarialWrapper):
-    """Adversarial Pendulum Wrapper."""
-
-    attacks = ["mass", "gravity"]
-
-    def __init__(self, env, alpha=0.5, attack_mode="mass", **kwargs):
-        antagonist_bounds = np.ones((2,))
-        super().__init__(
-            env=env,
-            antagonist_low=-antagonist_bounds,
-            antagonist_high=antagonist_bounds,
-            alpha=alpha,
-        )
-        if attack_mode not in self.attacks:
-            raise ValueError(f"{attack_mode} not in {self.attacks}.")
-        self.attack_mode = attack_mode
-
-    def adversarial_step(self, original_action, antagonist_action):
-        """See AdversarialWrapper.step()."""
-        if self.attack_mode == "gravity":
-            self.env.g = 10.0 * (1 + antagonist_action[0])
-        else:
-            self.env.m = 1.0 * (1 + antagonist_action[1])
-        return self.env.step(original_action)
