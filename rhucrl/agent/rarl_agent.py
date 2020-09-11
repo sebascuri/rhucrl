@@ -105,5 +105,5 @@ class RARLAgent(AdversarialAgent):
             a_env, comment="Antagonist", *args, **kwargs
         )
         if hasattr(a_a, "dynamical_model"):
-            a_a.dynamical_model.dim_action = a_env.antagonist_dim_action
+            a_a.dynamical_model.dim_action = environment.antagonist_dim_action
         return a_a

@@ -1,5 +1,10 @@
 import pytest
 
+from exps.pendulum.utilities import AdversarialPendulumWrapper
+from rhucrl.environment.wrappers import (
+    NoisyActionRobustWrapper,
+    ProbabilisticActionRobustWrapper,
+)
 from rhucrl.utilities.util import get_agent, get_default_models, get_environment
 
 
@@ -23,8 +28,24 @@ def model_based_agent(request):
     return request.param
 
 
-@pytest.fixture(params=["PendulumAdvEnv-v0"])
+@pytest.fixture(params=["Pendulum-v0"])
 def environment_name(request):
+    return request.param
+
+
+@pytest.fixture(
+    params=[
+        AdversarialPendulumWrapper,
+        NoisyActionRobustWrapper,
+        ProbabilisticActionRobustWrapper,
+    ]
+)
+def wrapper(request):
+    return request.param
+
+
+@pytest.fixture(params=[0.1])
+def alpha(request):
     return request.param
 
 
@@ -35,16 +56,22 @@ def delete_logs(robust_agent):
 
 
 class TestAdversarialMPC(object):
-    def test_model_free(self, environment_name):
+    def test_model_free(self, environment_name, wrapper, alpha):
         environment = get_environment(environment=environment_name)
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
         agent = get_agent("AdversarialMPC", environment)
         assert agent.policy.dim_state == environment.dim_state
         assert agent.policy.dim_action == environment.dim_action
         assert agent.weak_antagonist_agent is None
         delete_logs(agent)
 
-    def test_model_model_based(self, hallucinate, strong_antagonist, environment_name):
+    def test_model_model_based(
+        self, hallucinate, strong_antagonist, environment_name, wrapper, alpha
+    ):
         environment = get_environment(environment=environment_name)
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
         protagonist_model, antagonist_model = get_default_models(
             environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
         )
@@ -57,6 +84,7 @@ class TestAdversarialMPC(object):
         assert agent.policy.dim_state[0] == environment.dim_state[0]
 
         raw_env = get_environment(environment=environment_name)
+        raw_env.add_wrapper(wrapper, alpha=alpha)
         if hallucinate:
             assert (
                 agent.policy.dim_action[0]
@@ -72,8 +100,10 @@ class TestAdversarialMPC(object):
 
 
 class TestRARL(object):
-    def test_model_free(self, base_agent, environment_name):
+    def test_model_free(self, base_agent, environment_name, wrapper, alpha):
         environment = get_environment(environment=environment_name)
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
         agent = get_agent(
             "RARL", environment, protagonist_name=base_agent, antagonist_name=base_agent
         )
@@ -96,16 +126,19 @@ class TestRARL(object):
 
         delete_logs(agent)
 
-    def test_model_model_based(
+    def test_model_based(
         self,
         hallucinate,
         strong_antagonist,
         model_based_agent,
         base_agent,
         environment_name,
+        wrapper,
+        alpha,
     ):
         environment = get_environment(environment=environment_name)
-
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
         protagonist_model, antagonist_model = get_default_models(
             environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
         )
@@ -161,9 +194,11 @@ class TestRARL(object):
 
 
 class TestZeroSum(object):
-    def test_model_free(self, base_agent, environment_name):
+    def test_model_free(self, base_agent, environment_name, wrapper, alpha):
 
         environment = get_environment(environment=environment_name)
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
 
         agent = get_agent(
             "ZeroSum",
@@ -187,15 +222,19 @@ class TestZeroSum(object):
 
         delete_logs(agent)
 
-    def test_model_model_based(
+    def test_model_based(
         self,
         hallucinate,
         strong_antagonist,
         model_based_agent,
         base_agent,
         environment_name,
+        wrapper,
+        alpha,
     ):
         environment = get_environment(environment=environment_name)
+        environment.add_wrapper(wrapper, alpha=alpha)
+        assert environment.alpha == alpha
 
         protagonist_model, antagonist_model = get_default_models(
             environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
@@ -211,6 +250,7 @@ class TestZeroSum(object):
             antagonist_dynamical_model=antagonist_model,
         )
         raw_env = get_environment(environment.env_name)
+        raw_env.add_wrapper(wrapper, alpha=alpha)
         dim_action = raw_env.dim_action
         dim_h_action = environment.dim_action
         dim_state = environment.dim_state

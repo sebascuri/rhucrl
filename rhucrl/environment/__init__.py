@@ -92,9 +92,3 @@ register(
     id="StrikerAdvEnv-v0",
     entry_point="rhucrl.environment.wrappers.mujoco_wrapper:get_stricker_env",
 )
-
-
-register(
-    id="PendulumAdvEnv-v0",
-    entry_point="rhucrl.environment.wrappers.pendulum_wrapper:PendulumAdvEnv",
-)

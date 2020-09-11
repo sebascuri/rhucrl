@@ -41,9 +41,9 @@ def adversarial_to_antagonist_environment(environment, strong_antagonist=True):
     protagonist_dim_action = environment.protagonist_dim_action[0]
 
     if strong_antagonist:
-        dim_action = environment.dim_action[0] - protagonist_dim_action
+        dim_action = environment.antagonist_dim_action[0] + environment.dim_state[0]
     else:
-        dim_action = antagonist_environment.dim_action[0] - protagonist_dim_action
+        dim_action = environment.antagonist_dim_action[0]
 
     antagonist_environment.action_space = Box(
         environment.action_space.low[
