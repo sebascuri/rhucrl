@@ -28,7 +28,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         protagonist_agent,
         antagonist_agent=None,
         weak_antagonist_agent=None,
-        tensorboard=True,
+        tensorboard=False,
         *args,
         **kwargs,
     ):
@@ -43,7 +43,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
                 self.agents.update({role: agent})
                 agent.logger.delete_directory()
                 agent.logger = Logger(
-                    f"{self.logger.writer.logdir[5:]}/{role}-{agent.name}",
+                    f"{self.logger.log_dir[5:]}/{role}-{agent.name}",
                     tensorboard=tensorboard,
                 )
                 if "Antagonist" in role:

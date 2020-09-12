@@ -3,7 +3,6 @@ import importlib
 
 from rllib.model import TransformedModel
 
-from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
     AdversarialPendulumWrapper,
     HallucinationWrapper,
@@ -15,7 +14,7 @@ from rhucrl.model import HallucinatedModel
 
 
 def wrap_adversarial_environment(
-    environment: AdversarialEnv, wrapper_name: str, alpha: float, force_body_names=None
+    environment, wrapper_name, alpha, force_body_names=None
 ):
     """Wrap environment with an adversarial wrapper."""
     if wrapper_name == "noisy_action":

@@ -61,13 +61,14 @@ class TestAdversarialMPC(object):
         environment = AdversarialEnv(env_name=environment_name)
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
-        agent = get_agent("AdversarialMPC", environment)
+        agent = get_agent("AdversarialMPC", environment, tensorboard=False)
         assert agent.policy.dim_state == environment.dim_state
         assert agent.policy.dim_action == environment.dim_action
         assert "Antagonist" not in agent.agents
         assert "WeakAntagonist" not in agent.agents
 
         delete_logs(agent)
+        environment.close()
 
     def test_model_model_based(
         self, hallucinate, strong_antagonist, environment_name, wrapper, alpha
@@ -83,6 +84,7 @@ class TestAdversarialMPC(object):
             environment,
             protagonist_dynamical_model=protagonist_model,
             antagonist_dynamical_model=antagonist_model,
+            tensorboard=False,
         )
         assert agent.policy.dim_state[0] == environment.dim_state[0]
 
@@ -102,6 +104,8 @@ class TestAdversarialMPC(object):
         assert "Antagonist" not in agent.agents
         assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)
+        raw_env.close()
+        environment.close()
 
 
 class TestRARL(object):
@@ -110,7 +114,11 @@ class TestRARL(object):
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
         agent = get_agent(
-            "RARL", environment, protagonist_name=base_agent, antagonist_name=base_agent
+            "RARL",
+            environment,
+            protagonist_name=base_agent,
+            antagonist_name=base_agent,
+            tensorboard=False,
         )
         # Test Names.
         for agent_ in agent.agents.values():
@@ -130,6 +138,7 @@ class TestRARL(object):
         assert "WeakAntagonist" not in agent.agents
 
         delete_logs(agent)
+        environment.close()
 
     def test_model_based(
         self,
@@ -156,6 +165,7 @@ class TestRARL(object):
             base_agent=base_agent,
             protagonist_dynamical_model=protagonist_model,
             antagonist_dynamical_model=antagonist_model,
+            tensorboard=False,
         )
         protagonist_dim_action = environment.protagonist_dim_action
         antagonist_dim_action = environment.antagonist_dim_action
@@ -196,6 +206,7 @@ class TestRARL(object):
         # Test weak antagonist
         assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)
+        environment.close()
 
 
 class TestZeroSum(object):
@@ -210,6 +221,7 @@ class TestZeroSum(object):
             environment,
             protagonist_name=base_agent,
             antagonist_name=base_agent,
+            tensorboard=False,
         )
         # Test Names.
         for agent_ in agent.agents.values():
@@ -229,6 +241,7 @@ class TestZeroSum(object):
         assert "WeakAntagonist" not in agent.agents
 
         delete_logs(agent)
+        environment.close()
 
     def test_model_based(
         self,
@@ -256,6 +269,7 @@ class TestZeroSum(object):
             base_agent=base_agent,
             protagonist_dynamical_model=protagonist_model,
             antagonist_dynamical_model=antagonist_model,
+            tensorboard=False,
         )
         raw_env = AdversarialEnv(env_name=environment_name)
         raw_env.add_wrapper(wrapper, alpha=alpha)
@@ -298,3 +312,5 @@ class TestZeroSum(object):
         else:
             assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)
+        raw_env.close()
+        environment.close()
