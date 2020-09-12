@@ -1,6 +1,6 @@
 """Python Script Template."""
 
-from rllib.agent import MPCAgent, RandomAgent
+from rllib.agent import MPCAgent
 from rllib.dataset.datatypes import Observation
 
 from rhucrl.algorithm.adversarial_mpc import adversarial_solver
@@ -14,8 +14,7 @@ class AdversarialMPCAgent(AdversarialAgent):
 
     def __init__(self, mpc_solver, *args, **kwargs):
         protagonist = MPCAgent(mpc_solver, *args, **kwargs)
-        antagonist = RandomAgent(dim_state=(), dim_action=(), num_actions=1)
-        super().__init__(protagonist, antagonist, *args, **kwargs)
+        super().__init__(protagonist, *args, **kwargs)
         self.policy = protagonist.policy
         self.policy.dim_action = (
             mpc_solver.p_dim_action[0]

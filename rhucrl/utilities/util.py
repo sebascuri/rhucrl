@@ -5,6 +5,7 @@ from rllib.model import TransformedModel
 
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
+    AdversarialPendulumWrapper,
     HallucinationWrapper,
     MujocoAdversarialWrapper,
     NoisyActionRobustWrapper,
@@ -24,6 +25,10 @@ def wrap_adversarial_environment(
     elif wrapper_name == "external_force":
         environment.add_wrapper(
             MujocoAdversarialWrapper, alpha=alpha, force_body_names=force_body_names
+        )
+    elif wrapper_name == "adversarial_pendulum":
+        environment.add_wrapper(
+            AdversarialPendulumWrapper, alpha=alpha, force_body_names=force_body_names
         )
     else:
         raise NotImplementedError(f"{wrapper_name} not implemented.")

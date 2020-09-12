@@ -1,8 +1,8 @@
 import pytest
 
-from exps.pendulum.utilities import AdversarialPendulumWrapper
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
+    AdversarialPendulumWrapper,
     NoisyActionRobustWrapper,
     ProbabilisticActionRobustWrapper,
 )
@@ -51,7 +51,7 @@ def alpha(request):
 
 
 def delete_logs(robust_agent):
-    for agent in robust_agent.agents:
+    for agent in robust_agent.agents.values():
         agent.logger.delete_directory()
     robust_agent.logger.delete_directory()
 
@@ -64,7 +64,9 @@ class TestAdversarialMPC(object):
         agent = get_agent("AdversarialMPC", environment)
         assert agent.policy.dim_state == environment.dim_state
         assert agent.policy.dim_action == environment.dim_action
-        assert agent.weak_antagonist_agent is None
+        assert "Antagonist" not in agent.agents
+        assert "WeakAntagonist" not in agent.agents
+
         delete_logs(agent)
 
     def test_model_model_based(
@@ -94,9 +96,11 @@ class TestAdversarialMPC(object):
         else:
             assert agent.policy.dim_action[0] == raw_env.dim_action[0]
 
-        assert agent.protagonist_agent.dynamical_model.dim_state == raw_env.dim_state
-        assert agent.protagonist_agent.dynamical_model.dim_action == raw_env.dim_action
-        assert agent.weak_antagonist_agent is None
+        protagonist = agent.agents["Protagonist"]
+        assert protagonist.dynamical_model.dim_state == raw_env.dim_state
+        assert protagonist.dynamical_model.dim_action == raw_env.dim_action
+        assert "Antagonist" not in agent.agents
+        assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)
 
 
@@ -109,21 +113,21 @@ class TestRARL(object):
             "RARL", environment, protagonist_name=base_agent, antagonist_name=base_agent
         )
         # Test Names.
-        for agent_ in agent.agents:
+        for agent_ in agent.agents.values():
             assert agent_.name[: len(base_agent)] == base_agent
 
         # Test Protagonist
-        protagonist = agent.protagonist_agent
+        protagonist = agent.agents["Protagonist"]
         assert protagonist.policy.dim_action == environment.protagonist_dim_action
         assert protagonist.policy.dim_state == environment.dim_state
 
         # Test Antagonist
-        antagonist = agent.antagonist_agent
+        antagonist = agent.agents["Antagonist"]
         assert antagonist.policy.dim_action == environment.antagonist_dim_action
         assert antagonist.policy.dim_state == environment.dim_state
 
         # Test Weak Antagonist
-        assert agent.weak_antagonist_agent is None
+        assert "WeakAntagonist" not in agent.agents
 
         delete_logs(agent)
 
@@ -158,13 +162,13 @@ class TestRARL(object):
 
         dim_state = environment.dim_state
         # Test Names.
-        for agent_ in agent.agents:
+        for agent_ in agent.agents.values():
             assert agent_.name[: len(model_based_agent)] == model_based_agent
             if base_agent in ["MVE", "STEVE", "Dyna"]:
                 assert agent.algorithm.base_algorithm == base_agent
 
         # Test protagonist
-        protagonist = agent.protagonist_agent
+        protagonist = agent.agents["Protagonist"]
 
         assert protagonist.policy.dim_state == dim_state
         assert protagonist.dynamical_model.dim_state == dim_state
@@ -177,7 +181,7 @@ class TestRARL(object):
             assert protagonist.policy.dim_action == protagonist_dim_action
 
         # Test antagonist
-        antagonist = agent.antagonist_agent
+        antagonist = agent.agents["Antagonist"]
 
         assert antagonist.policy.dim_state == dim_state
         assert antagonist.dynamical_model.dim_state == dim_state
@@ -190,7 +194,7 @@ class TestRARL(object):
             assert antagonist.policy.dim_action == antagonist_dim_action
 
         # Test weak antagonist
-        assert agent.weak_antagonist_agent is None
+        assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)
 
 
@@ -208,18 +212,21 @@ class TestZeroSum(object):
             antagonist_name=base_agent,
         )
         # Test Names.
-        for agent_ in agent.agents:
+        for agent_ in agent.agents.values():
             assert agent_.name[: len(base_agent)] == base_agent
 
         # Test Protagonist
-        protagonist = agent.protagonist_agent
+        protagonist = agent.agents["Protagonist"]
         assert protagonist.policy.dim_action == environment.dim_action
         assert protagonist.policy.dim_state == environment.dim_state
 
         # Test Antagonist
-        antagonist = agent.antagonist_agent
+        antagonist = agent.agents["Antagonist"]
         assert antagonist.policy.dim_action == environment.dim_action
         assert antagonist.policy.dim_state == environment.dim_state
+
+        # Test Weak Antagonist
+        assert "WeakAntagonist" not in agent.agents
 
         delete_logs(agent)
 
@@ -260,13 +267,13 @@ class TestZeroSum(object):
         else:
             assert dim_h_action[0] == dim_action[0]
         # Test Names.
-        for agent_ in agent.agents:
+        for agent_ in agent.agents.values():
             assert agent_.name[: len(model_based_agent)] == model_based_agent
             if base_agent in ["MVE", "STEVE", "Dyna"]:
                 assert agent.algorithm.base_algorithm == base_agent
 
         # Test protagonist
-        protagonist = agent.protagonist_agent
+        protagonist = agent.agents["Protagonist"]
 
         assert protagonist.policy.dim_state == dim_state
         assert protagonist.dynamical_model.dim_state == dim_state
@@ -274,7 +281,7 @@ class TestZeroSum(object):
         assert protagonist.policy.dim_action == dim_h_action
 
         # Test antagonist
-        antagonist = agent.antagonist_agent
+        antagonist = agent.agents["Antagonist"]
 
         assert antagonist.policy.dim_state == dim_state
         assert antagonist.dynamical_model.dim_state == dim_state
@@ -282,12 +289,12 @@ class TestZeroSum(object):
         assert antagonist.policy.dim_action == dim_h_action
 
         # Test weak antagonist
-        weak_antagonist = agent.weak_antagonist_agent
         if strong_antagonist and hallucinate:
+            weak_antagonist = agent.agents["WeakAntagonist"]
             assert weak_antagonist.policy.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_action == dim_action
             assert weak_antagonist.policy.dim_action == dim_h_action
         else:
-            assert weak_antagonist is None
+            assert "WeakAntagonist" not in agent.agents
         delete_logs(agent)

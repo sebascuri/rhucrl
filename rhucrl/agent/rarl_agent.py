@@ -29,8 +29,8 @@ class RARLAgent(AdversarialAgent):
         self.policy = JointPolicy(
             dim_action=dim_action,
             action_scale=action_scale,
-            protagonist_policy=self.protagonist_agent.policy,
-            antagonist_policy=self.antagonist_agent.policy,
+            protagonist_policy=self.agents["Protagonist"].policy,
+            antagonist_policy=self.agents["Antagonist"].policy,
         )
 
     def observe(self, observation) -> None:

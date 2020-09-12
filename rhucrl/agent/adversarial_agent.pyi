@@ -1,6 +1,6 @@
 """Python Script Template."""
 from abc import ABCMeta
-from typing import Any, List, Optional, Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar
 
 from rllib.agent import AbstractAgent
 from rllib.dataset.datatypes import Observation
@@ -12,15 +12,12 @@ from rhucrl.environment import AdversarialEnv
 T = TypeVar("T", bound="AdversarialAgent")
 
 class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
-    protagonist_agent: AbstractAgent
-    antagonist_agent: AbstractAgent
-    weak_antagonist_agent: Optional[AbstractAgent]
-    agents: List[AbstractAgent]
-    antagonist_agents: List[AbstractAgent]
+    agents: Dict[str, AbstractAgent]
+    antagonist_agents: Dict[str, AbstractAgent]
     def __init__(
         self,
         protagonist_agent: AbstractAgent,
-        antagonist_agent: AbstractAgent,
+        antagonist_agent: Optional[AbstractAgent] = ...,
         weak_antagonist_agent: Optional[AbstractAgent] = ...,
         tensorboard: bool = ...,
         *args: Any,

@@ -38,3 +38,9 @@ class AdversarialEnv(GymEnvironment):
         if hasattr(self.env, "alpha"):
             self.env.alpha = alpha
             self.action_space = self.env.action_space
+
+    @property
+    def name(self):
+        """Return name."""
+        wrapper = self.env.name if hasattr(self.env, "name") else ""
+        return f"{self.env_name} {wrapper} {self.alpha}"

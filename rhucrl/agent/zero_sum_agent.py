@@ -1,5 +1,6 @@
 """Zero sum agent."""
 from importlib import import_module
+from itertools import product
 
 from rllib.dataset.datatypes import Observation
 from rllib.model import TransformedModel
@@ -19,11 +20,10 @@ class ZeroSumAgent(AdversarialAgent):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assert (
-            self.protagonist_agent.policy.base_policy
-            is self.antagonist_agent.policy.base_policy
-        ), "Protagonist and Adversarial agent should share the base policy."
-        self.policy = self.antagonist_agent.policy
+        for agent_a, agent_b in product(self.agents.values(), self.agents.values()):
+            assert agent_a.policy.base_policy is agent_b.policy.base_policy
+
+        self.policy = self.agents["Antagonist"].policy
 
     def observe(self, observation):
         """Send observations to both players.
