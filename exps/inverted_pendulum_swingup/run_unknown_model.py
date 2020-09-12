@@ -2,16 +2,17 @@
 
 from rllib.util.utilities import set_random_seed
 
-from exps.half_cheetah.utilities import HalfCheetahReward
+from exps.pendulum.utilities import PendulumReward, pendulum_reset
 from exps.utilities import get_command_line_parser
-from rhucrl.environment.wrappers import MujocoAdversarialWrapper
-from rhucrl.utilities.training import train_adversarial_agent
-from rhucrl.utilities.util import get_agent, get_default_models, get_environment
+from rhucrl.environment import AdversarialEnv
+from rhucrl.environment.wrappers import ResetWrapper, RewardWrapper
+from rhucrl.utilities.util import get_agent, get_default_models
 
 parser = get_command_line_parser()
 parser.set_defaults(
-    environment="HalfCheetah-v4",
-    agent="RARL",
+    environment="PendulumAdvEnv-v0",
+    agent="AdversarialMPC",
+    attack_mode="gravity",
     protagonist_name="STEVE",
     antagonist_name="STEVE",
     alpha=0.1,
@@ -26,18 +27,14 @@ arg_dict = vars(args)
 
 set_random_seed(args.seed)
 # %% Generate environment.
-environment = get_environment(environment=arg_dict.pop("environment"), seed=args.seed)
-environment.add_wrapper(
-    MujocoAdversarialWrapper,
-    force_body_names=["torso", "bfoot", "ffoot"],
-    alpha=args.alpha,
-)
+environment = AdversarialEnv(env_name=arg_dict.pop("environment"), seed=args.seed)
+environment.add_wrapper(ResetWrapper, reset_function=pendulum_reset)
 
 # %% Generate Models.
 protagonist_dynamical_model, antagonist_dynamical_model = get_default_models(
-    environment, hallucinate=args.hallucinate, strong_antagonist=args.strong_antagonist
+    environment, args.hallucinate, args.strong_antagonist
 )
-reward_model = HalfCheetahReward()
+reward_model = PendulumReward()
 
 # %% Generate Agent.
 agent = get_agent(

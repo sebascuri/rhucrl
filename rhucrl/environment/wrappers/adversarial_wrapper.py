@@ -75,3 +75,8 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
     def adversarial_step(self, protagonist_action, antagonist_action):
         """Perform an adversarial step on the environment."""
         raise NotImplementedError
+
+    @property
+    def name(self):
+        """Adversarial-Wrapper name."""
+        return self.__class__.__name__

@@ -59,3 +59,8 @@ class NoisyActionRobustWrapper(AdversarialWrapper):
         # Choose action by averaging protagonist and antagonist actions.
         action = (1 - self.alpha) * protagonist_action + self.alpha * antagonist_action
         return self.env.step(action)
+
+    @property
+    def name(self):
+        """Get wrapper name."""
+        return "NoisyAction"

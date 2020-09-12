@@ -1,11 +1,40 @@
 """Python Script Template."""
 import argparse
 
+import torch
 from gym.envs import registry
 from rllib.agent import AGENTS as BASE_AGENTS
 from rllib.agent import MODEL_FREE
+from rllib.model import AbstractModel
 
 from rhucrl.agent import AGENTS as ROBUST_AGENTS
+
+
+def healty_state(state: torch.Tensor, healthy_range=(-100, 100)):
+    """Check if state is in healthy range."""
+    min_state, max_state = healthy_range
+    return (min_state < state) * (state < max_state)
+
+
+class LargeStateTermination(AbstractModel):
+    """Hopper Termination Function."""
+
+    def __init__(self):
+        super().__init__(dim_state=(), dim_action=(), model_kind="termination")
+
+    @staticmethod
+    def is_healthy(state):
+        """Check if state is healthy."""
+        return healty_state(state).all(-1)
+
+    def forward(self, state, action, next_state=None):
+        """Return termination model logits."""
+        done = ~self.is_healthy(state)
+        return (
+            torch.zeros(*done.shape, 2)
+            .scatter_(dim=-1, index=(~done).long().unsqueeze(-1), value=-float("inf"))
+            .squeeze(-1)
+        )
 
 
 def get_command_line_parser():
@@ -13,7 +42,7 @@ def get_command_line_parser():
     parser = argparse.ArgumentParser("Run experiment on RLLib.")
     parser.add_argument(
         "--environment",
-        default="HalfCheetahAdvEnv-v0",
+        default="HalfCheetah-v2",
         type=str,
         help="Environment name.",
         choices=list(registry.env_specs.keys()),
@@ -38,7 +67,7 @@ def get_command_line_parser():
         default=None,
         type=str,
         help="Antagonist agent name.",
-        choices=BASE_AGENTS,
+        choices=BASE_AGENTS + [None],
     )
     parser.add_argument(
         "--base-agent",
@@ -50,14 +79,15 @@ def get_command_line_parser():
 
     parser.add_argument("--hallucinate", action="store_true", default=False)
     parser.add_argument("--strong-antagonist", action="store_true", default=False)
-    parser.add_argument("--alpha", default=0.1, type=float, help="Antagonist power.")
+    parser.add_argument("--alpha", default=5.0, type=float, help="Antagonist power.")
     parser.add_argument(
         "--adversarial-wrapper",
-        default=None,
+        default="external_force",
         type=str,
         help="Wrapper.",
-        choices=["noisy_action", "probabilistic_action", None],
+        choices=["noisy_action", "probabilistic_action", "external_force"],
     )
+    parser.add_argument("--force-body-names", default=["torso"], type=str, nargs="+")
 
     parser.add_argument(
         "--clip-gradient-val", type=float, default=100.0, help="Maximum gradient norm."

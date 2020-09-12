@@ -35,3 +35,8 @@ class HallucinationWrapper(Wrapper):
     def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
         """See `gym.Env.step()'."""
         return self.env.step(action[: self.original_dim_action[0]])
+
+    @property
+    def name(self):
+        """Get wrapper name."""
+        return self.env.name

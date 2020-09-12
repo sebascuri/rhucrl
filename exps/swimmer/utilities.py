@@ -1,21 +1,21 @@
-"""Half Cheetah Utility experiments."""
+"""Swimmer Utility experiments."""
 
 import numpy as np
 import torch
-from gym.envs.mujoco.half_cheetah_v3 import HalfCheetahEnv
+from gym.envs.mujoco.swimmer_v3 import SwimmerEnv
 from rllib.reward.state_action_reward import StateActionReward
 
 from exps.utilities import LargeStateTermination
 
-FORWARD_REWARD_WEIGHT = 1.0
-ACTION_COST = 0.1
+FORWARD_REWARD_WEIGHT = 1
+ACTION_COST = 1e-4
 
 
-class HalfCheetahV4Env(HalfCheetahEnv):
-    """Half-Cheetah Environment."""
+class SwimmerV4Env(SwimmerEnv):
+    """Swimmer Environment."""
 
     def __init__(self, action_cost=ACTION_COST):
-        self.prev_pos = np.zeros(1)
+        self.prev_pos = np.zeros(2)
         super().__init__(
             ctrl_cost_weight=action_cost, forward_reward_weight=FORWARD_REWARD_WEIGHT
         )
@@ -23,16 +23,17 @@ class HalfCheetahV4Env(HalfCheetahEnv):
     def _get_obs(self):
         position = self.sim.data.qpos.flat.copy()
         velocity = self.sim.data.qvel.flat.copy()
-        forward_velocity = (position[:1] - self.prev_pos) / self.dt
-        self.prev_pos = position[:1]
 
-        return np.concatenate((forward_velocity, position[1:], velocity)).ravel()
+        xy_velocity = (position[:2] - self.prev_pos) / self.dt
+        self.prev_pos = position[:2]
+
+        return np.concatenate((xy_velocity, position[2:], velocity)).ravel()
 
 
-class HalfCheetahReward(StateActionReward):
-    """Half-Cheetah Reward."""
+class SwimmerReward(StateActionReward):
+    """Swimmer Reward."""
 
-    dim_action = (6,)
+    dim_action = (2,)
 
     def __init__(self, action_cost_ratio=ACTION_COST, *args, **kwargs):
         super().__init__(action_cost_ratio=action_cost_ratio)
@@ -46,4 +47,4 @@ class HalfCheetahReward(StateActionReward):
         return FORWARD_REWARD_WEIGHT * state[..., 0]
 
 
-HalfCheetahTermination = LargeStateTermination
+SwimmerTermination = LargeStateTermination

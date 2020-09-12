@@ -60,3 +60,8 @@ class ProbabilisticActionRobustWrapper(AdversarialWrapper):
             action = antagonist_action
 
         return self.env.step(action)
+
+    @property
+    def name(self):
+        """Get wrapper name."""
+        return "ProbabilisticAction"
