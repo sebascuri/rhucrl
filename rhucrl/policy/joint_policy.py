@@ -41,8 +41,8 @@ class JointPolicy(AdversarialPolicy):
 
     def forward(self, state):
         """Forward compute the policy."""
-        p_dim = self.protagonist_dim_action[0]
-        a_dim = self.antagonist_dim_action[0]
+        p_dim = self.dim_action[0] - self.antagonist_dim_action[0]
+        a_dim = self.dim_action[0] - self.protagonist_dim_action[0]
 
         p_mean, p_scale_tril = self.protagonist_policy(state)
         if self.only_protagonist:
@@ -62,12 +62,11 @@ class JointPolicy(AdversarialPolicy):
         else:
             raise NotImplementedError
 
-        p_mean = p_mean[..., :p_dim]
-        p_std = p_std[..., :p_dim]
-        a_mean, a_std = a_mean[..., :a_dim], a_std[..., :a_dim]
+        pro_mean, pro_std = p_mean[..., :p_dim], p_std[..., :p_dim]
+        ant_mean, ant_std = a_mean[..., :a_dim], a_std[..., :a_dim]
 
-        mean = torch.cat((p_mean, a_mean, h_mean), dim=-1)
-        std = torch.cat((p_std, a_std, h_std), dim=-1)
+        mean = torch.cat((pro_mean, ant_mean, h_mean), dim=-1)
+        std = torch.cat((pro_std, ant_std, h_std), dim=-1)
         return mean, std.diag_embed()
 
     @classmethod
