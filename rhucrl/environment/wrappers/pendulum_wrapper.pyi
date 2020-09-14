@@ -4,10 +4,9 @@ import numpy as np
 
 from rhucrl.environment import AdversarialEnv
 
-from .adversarial_wrapper import AdversarialWrapper
+from .mujoco_wrapper import MujocoAdversarialWrapper
 
-class AdversarialPendulumWrapper(AdversarialWrapper):
-    force_body_names: Dict[str, int]
+class AdversarialPendulumWrapper(MujocoAdversarialWrapper):
     def __init__(
         self,
         env: AdversarialEnv,
@@ -15,6 +14,3 @@ class AdversarialPendulumWrapper(AdversarialWrapper):
         force_body_names: Sequence[str] = ...,
         **kwargs: Any,
     ) -> None: ...
-    def adversarial_step(
-        self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
-    ) -> Tuple[np.ndarray, float, bool, dict]: ...

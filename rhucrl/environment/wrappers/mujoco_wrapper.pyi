@@ -12,7 +12,7 @@ try:
     class MujocoAdversarialWrapper(AdversarialWrapper):
         """Wrapper for Mujoco adversarial environments."""
 
-        _antagonist_body_index: List[int]
+        force_body_names: Dict[str, int]
         def __init__(
             self,
             env: MujocoEnv,
