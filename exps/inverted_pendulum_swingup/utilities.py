@@ -78,8 +78,10 @@ class PendulumModel(AbstractModel):
         """Compute Next State distribution."""
         th, thdot = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
 
-        action = action[..., 0].clone()
+        protagonist_action = action[..., 0]
+        u = torch.clamp(protagonist_action, -self.max_torque, self.max_torque)
 
+        antagonist_action = action[..., 1:]
         g = 10.0
         m = 1.0
         length = 1.0
@@ -87,13 +89,11 @@ class PendulumModel(AbstractModel):
 
         if "gravity" in self.force_body_names:
             idx = self.force_body_names["gravity"]
-            g = 10.0 * (1 + action[..., 1 + idx].clone())
+            g = 10.0 * (1 + antagonist_action[..., idx])
 
         if "mass" in self.force_body_names:
             idx = self.force_body_names["mass"]
-            m = 1.0 * (1 + action[..., 1 + idx].clone())
-
-        u = torch.clamp(action, -self.max_torque, self.max_torque)
+            m = 1.0 * (1 + antagonist_action[..., idx])
 
         newthdot = (
             thdot

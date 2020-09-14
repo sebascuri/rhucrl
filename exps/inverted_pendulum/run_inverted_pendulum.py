@@ -6,7 +6,8 @@ from exps.utilities import get_command_line_parser
 parser = get_command_line_parser()
 parser.set_defaults(
     environment="InvertedPendulum-v2",
-    force_body_names=["cart", "pole"],
+    force_body_names=["cart", "pole"],  # cart, pole
+    alpha=0.1,
     clip_gradient_val=10,
 )
 args = parser.parse_args()

@@ -20,4 +20,4 @@ args = parser.parse_args()
 model = PendulumModel(alpha=args.alpha, force_body_names=args.force_body_names)
 reward_model = PendulumReward()
 
-agent = run(args, model, reward_model)
+agent = run(args, dynamical_model=model, reward_model=reward_model)
