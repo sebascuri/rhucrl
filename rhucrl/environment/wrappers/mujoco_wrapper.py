@@ -11,10 +11,11 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
     def __init__(
         self, env, alpha=5.0, force_body_names=None, new_mass=None, new_friction=None
     ):
-        self.force_body_names = [] if force_body_names is None else force_body_names
-        self._antagonist_bindex = [
-            env.model.body_names.index(i) for i in self.force_body_names
-        ]
+        force_body_names = [] if force_body_names is None else force_body_names
+        self.force_body_names = {
+            name: env.model.body_names.index(name) for name in force_body_names
+        }
+
         antagonist_high = np.ones(2 * len(self.force_body_names))
         antagonist_low = -antagonist_high
 
@@ -37,8 +38,8 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
 
     def _antagonist_action_to_xfrc(self, antagonist_action):
         aa = antagonist_action
-        for i, bindex in enumerate(self._antagonist_bindex):
-            self.sim.data.xfrc_applied[bindex] = np.array(
+        for i, body_index in enumerate(self.force_body_names.values()):
+            self.sim.data.xfrc_applied[body_index] = np.array(
                 [aa[i * 2], 0.0, aa[i * 2 + 1], 0.0, 0.0, 0.0]
             )
 
@@ -50,4 +51,4 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
     @property
     def name(self):
         """Get wrapper name."""
-        return "Adversarial" + "-".join(self.force_body_names)
+        return "Adversarial " + "-".join(self.force_body_names)
