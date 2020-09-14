@@ -1,10 +1,11 @@
 """Python Script Template."""
+from contextlib import nullcontext
 
 from rllib.agent import MPCAgent
-from rllib.dataset.datatypes import Observation
 
 from rhucrl.algorithm.adversarial_mpc import adversarial_solver
-from rhucrl.model import HallucinatedModel
+from rhucrl.environment.utilities import Hallucinate
+from rhucrl.utilities.util import get_default_model
 
 from .adversarial_agent import AdversarialAgent
 
@@ -29,8 +30,8 @@ class AdversarialMPCAgent(AdversarialAgent):
 
         """
         super().observe(observation)
-        protagonist_observation = Observation(*observation)
-        antagonist_observation = Observation(*observation)
+        protagonist_observation = observation.clone()
+        antagonist_observation = observation.clone()
         antagonist_observation.reward = -observation.reward
 
         self.send_observations(protagonist_observation, antagonist_observation)
@@ -39,20 +40,29 @@ class AdversarialMPCAgent(AdversarialAgent):
     def default(
         cls,
         environment,
-        protagonist_dynamical_model=None,
-        antagonist_dynamical_model=None,
+        dynamical_model=None,
+        hallucinate=False,
+        strong_antagonist=False,
         *args,
         **kwargs,
     ):
         """Get default RARL agent."""
-        agent = MPCAgent.default(
-            environment, dynamical_model=protagonist_dynamical_model, *args, **kwargs
+        dynamical_model = get_default_model(
+            environment, known_model=dynamical_model, hallucinate=hallucinate
         )
+        if hallucinate:
+            cm = Hallucinate(environment)
+        else:
+            cm = nullcontext()
 
-        mpc_solver = adversarial_solver(
-            base_solver=agent.planning_algorithm,
-            protagonist_dim_action=environment.protagonist_dim_action,
-            antagonist_dim_action=environment.antagonist_dim_action,
-            strong_antagonist=isinstance(antagonist_dynamical_model, HallucinatedModel),
-        )
-        return super().default(environment, mpc_solver=mpc_solver, *args, **kwargs)
+        with cm:
+            agent = MPCAgent.default(
+                environment, dynamical_model=dynamical_model, *args, **kwargs
+            )
+            mpc_solver = adversarial_solver(
+                base_solver=agent.planning_algorithm,
+                protagonist_dim_action=environment.protagonist_dim_action,
+                antagonist_dim_action=environment.antagonist_dim_action,
+                strong_antagonist=strong_antagonist,
+            )
+            return super().default(environment, mpc_solver=mpc_solver, *args, **kwargs)

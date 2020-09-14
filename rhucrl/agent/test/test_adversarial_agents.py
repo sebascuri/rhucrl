@@ -1,12 +1,16 @@
+from itertools import product
+
 import pytest
+from rllib.util.rollout import step_env
 
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
     AdversarialPendulumWrapper,
+    HallucinationWrapper,
     NoisyActionRobustWrapper,
     ProbabilisticActionRobustWrapper,
 )
-from rhucrl.utilities.util import get_agent, get_default_models
+from rhucrl.utilities.util import get_agent
 
 
 @pytest.fixture(params=[True, False])
@@ -56,17 +60,33 @@ def delete_logs(robust_agent):
     robust_agent.logger.delete_directory()
 
 
+def step(environment, agent):
+    agent.start_episode()
+    state = environment.reset()
+    action = agent.act(state)
+    assert action.shape == environment.dim_action
+    observation, next_state, done, info = step_env(
+        environment, state, action, agent.policy.action_scale
+    )
+    agent.observe(observation)
+    assert next_state.shape == environment.dim_state
+
+    action = agent.act(next_state)
+    assert action.shape == environment.dim_action
+    step_env(environment, state, action, agent.policy.action_scale)
+
+
 class TestAdversarialMPC(object):
     def test_model_free(self, environment_name, wrapper, alpha):
         environment = AdversarialEnv(env_name=environment_name)
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
-        agent = get_agent("AdversarialMPC", environment, tensorboard=False)
+        agent = get_agent("AdversarialMPC", environment)
         assert agent.policy.dim_state == environment.dim_state
         assert agent.policy.dim_action == environment.dim_action
         assert "Antagonist" not in agent.agents
         assert "WeakAntagonist" not in agent.agents
-
+        step(environment, agent)
         delete_logs(agent)
         environment.close()
 
@@ -76,35 +96,34 @@ class TestAdversarialMPC(object):
         environment = AdversarialEnv(env_name=environment_name)
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
-        protagonist_model, antagonist_model = get_default_models(
-            environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
-        )
         agent = get_agent(
             "AdversarialMPC",
             environment,
-            protagonist_dynamical_model=protagonist_model,
-            antagonist_dynamical_model=antagonist_model,
-            tensorboard=False,
+            hallucinate=hallucinate,
+            strong_antagonist=strong_antagonist,
         )
         assert agent.policy.dim_state[0] == environment.dim_state[0]
 
-        raw_env = AdversarialEnv(env_name=environment_name)
-        raw_env.add_wrapper(wrapper, alpha=alpha)
         if hallucinate:
             assert (
                 agent.policy.dim_action[0]
-                == raw_env.dim_action[0] + raw_env.dim_state[0]
+                == environment.dim_action[0] + environment.dim_state[0]
             )
         else:
-            assert agent.policy.dim_action[0] == raw_env.dim_action[0]
+            assert agent.policy.dim_action[0] == environment.dim_action[0]
 
         protagonist = agent.agents["Protagonist"]
-        assert protagonist.dynamical_model.dim_state == raw_env.dim_state
-        assert protagonist.dynamical_model.dim_action == raw_env.dim_action
+        assert protagonist.dynamical_model.dim_state == environment.dim_state
+        assert protagonist.dynamical_model.dim_action == environment.dim_action
+
         assert "Antagonist" not in agent.agents
         assert "WeakAntagonist" not in agent.agents
+
+        if hallucinate:
+            environment.add_wrapper(HallucinationWrapper)
+        step(environment, agent)
+
         delete_logs(agent)
-        raw_env.close()
         environment.close()
 
 
@@ -114,11 +133,7 @@ class TestRARL(object):
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
         agent = get_agent(
-            "RARL",
-            environment,
-            protagonist_name=base_agent,
-            antagonist_name=base_agent,
-            tensorboard=False,
+            "RARL", environment, protagonist_name=base_agent, antagonist_name=base_agent
         )
         # Test Names.
         for agent_ in agent.agents.values():
@@ -137,6 +152,8 @@ class TestRARL(object):
         # Test Weak Antagonist
         assert "WeakAntagonist" not in agent.agents
 
+        step(environment, agent)
+
         delete_logs(agent)
         environment.close()
 
@@ -153,19 +170,15 @@ class TestRARL(object):
         environment = AdversarialEnv(env_name=environment_name)
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
-        protagonist_model, antagonist_model = get_default_models(
-            environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
-        )
 
         agent = get_agent(
             "RARL",
             environment,
+            hallucinate=hallucinate,
+            strong_antagonist=strong_antagonist,
             protagonist_name=model_based_agent,
             antagonist_name=model_based_agent,
             base_agent=base_agent,
-            protagonist_dynamical_model=protagonist_model,
-            antagonist_dynamical_model=antagonist_model,
-            tensorboard=False,
         )
         protagonist_dim_action = environment.protagonist_dim_action
         antagonist_dim_action = environment.antagonist_dim_action
@@ -195,16 +208,24 @@ class TestRARL(object):
 
         assert antagonist.policy.dim_state == dim_state
         assert antagonist.dynamical_model.dim_state == dim_state
-        assert antagonist.dynamical_model.dim_action == antagonist_dim_action
         if hallucinate and strong_antagonist:
+            assert antagonist.dynamical_model.dim_action == (
+                dim_state[0] + antagonist_dim_action[0],
+            )
+
             assert antagonist.policy.dim_action == (
                 dim_state[0] + antagonist_dim_action[0],
             )
         else:
+            assert antagonist.dynamical_model.dim_action == antagonist_dim_action
             assert antagonist.policy.dim_action == antagonist_dim_action
 
         # Test weak antagonist
         assert "WeakAntagonist" not in agent.agents
+
+        if hallucinate:
+            environment.add_wrapper(HallucinationWrapper)
+        step(environment, agent)
         delete_logs(agent)
         environment.close()
 
@@ -221,7 +242,6 @@ class TestZeroSum(object):
             environment,
             protagonist_name=base_agent,
             antagonist_name=base_agent,
-            tensorboard=False,
         )
         # Test Names.
         for agent_ in agent.agents.values():
@@ -240,6 +260,8 @@ class TestZeroSum(object):
         # Test Weak Antagonist
         assert "WeakAntagonist" not in agent.agents
 
+        step(environment, agent)
+
         delete_logs(agent)
         environment.close()
 
@@ -257,29 +279,18 @@ class TestZeroSum(object):
         environment.add_wrapper(wrapper, alpha=alpha)
         assert environment.alpha == alpha
 
-        protagonist_model, antagonist_model = get_default_models(
-            environment, strong_antagonist=strong_antagonist, hallucinate=hallucinate
-        )
-
         agent = get_agent(
             "ZeroSum",
             environment,
+            hallucinate=hallucinate,
+            strong_antagonist=strong_antagonist,
             protagonist_name=model_based_agent,
             antagonist_name=model_based_agent,
             base_agent=base_agent,
-            protagonist_dynamical_model=protagonist_model,
-            antagonist_dynamical_model=antagonist_model,
-            tensorboard=False,
         )
-        raw_env = AdversarialEnv(env_name=environment_name)
-        raw_env.add_wrapper(wrapper, alpha=alpha)
-        dim_action = raw_env.dim_action
-        dim_h_action = environment.dim_action
+
+        dim_action = environment.dim_action
         dim_state = environment.dim_state
-        if hallucinate:
-            assert dim_h_action[0] == dim_action[0] + dim_state[0]
-        else:
-            assert dim_h_action[0] == dim_action[0]
         # Test Names.
         for agent_ in agent.agents.values():
             assert agent_.name[: len(model_based_agent)] == model_based_agent
@@ -292,7 +303,10 @@ class TestZeroSum(object):
         assert protagonist.policy.dim_state == dim_state
         assert protagonist.dynamical_model.dim_state == dim_state
         assert protagonist.dynamical_model.dim_action == dim_action
-        assert protagonist.policy.dim_action == dim_h_action
+        if hallucinate:
+            assert protagonist.policy.dim_action[0] == dim_state[0] + dim_action[0]
+        else:
+            assert protagonist.policy.dim_action == dim_action
 
         # Test antagonist
         antagonist = agent.agents["Antagonist"]
@@ -300,7 +314,10 @@ class TestZeroSum(object):
         assert antagonist.policy.dim_state == dim_state
         assert antagonist.dynamical_model.dim_state == dim_state
         assert antagonist.dynamical_model.dim_action == dim_action
-        assert antagonist.policy.dim_action == dim_h_action
+        if hallucinate and strong_antagonist:
+            assert antagonist.policy.dim_action[0] == dim_state[0] + dim_action[0]
+        else:
+            assert antagonist.policy.dim_action == dim_action
 
         # Test weak antagonist
         if strong_antagonist and hallucinate:
@@ -308,9 +325,26 @@ class TestZeroSum(object):
             assert weak_antagonist.policy.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_action == dim_action
-            assert weak_antagonist.policy.dim_action == dim_h_action
+            assert weak_antagonist.policy.dim_action == dim_action
         else:
             assert "WeakAntagonist" not in agent.agents
+
+        # Test same model.
+        for agent1, agent2 in product(agent.agents.values(), agent.agents.values()):
+            if agent1 is agent2:
+                continue
+            assert (
+                agent1.dynamical_model.base_model is agent2.dynamical_model.base_model
+            )
+            assert (
+                agent1.dynamical_model.forward_transformations
+                is agent2.dynamical_model.forward_transformations
+            )
+
+        if hallucinate:
+            environment.add_wrapper(HallucinationWrapper)
+
+        step(environment, agent)
+
         delete_logs(agent)
-        raw_env.close()
         environment.close()

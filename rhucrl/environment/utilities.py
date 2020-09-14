@@ -2,6 +2,8 @@
 import numpy as np
 from gym.spaces import Box
 
+from rhucrl.environment.wrappers import HallucinationWrapper
+
 from .adversarial_environment import AdversarialEnv
 
 
@@ -55,3 +57,21 @@ def adversarial_to_antagonist_environment(environment, strong_antagonist=True):
     )
     antagonist_environment.dim_action = (dim_action,)
     return antagonist_environment
+
+
+class Hallucinate(object):
+    """Context manager to hallucinate an environment."""
+
+    def __init__(self, environment, hallucinate_rewards=False):
+        self.environment = environment
+        self.hallucinate_rewards = hallucinate_rewards
+
+    def __enter__(self):
+        """Enter into a Hallucination Context."""
+        self.environment.add_wrapper(
+            HallucinationWrapper, hallucinate_rewards=self.hallucinate_rewards
+        )
+
+    def __exit__(self, *args):
+        """Exit the Hallucination Context."""
+        self.environment.pop_wrapper()

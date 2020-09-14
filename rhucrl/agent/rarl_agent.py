@@ -1,15 +1,16 @@
 """Python Script Template."""
+from contextlib import nullcontext
 from importlib import import_module
 
-from rllib.dataset.datatypes import Observation
-from rllib.util.neural_networks.utilities import deep_copy_module
+import torch
 
 from rhucrl.environment.utilities import (
+    Hallucinate,
     adversarial_to_antagonist_environment,
     adversarial_to_protagonist_environment,
 )
-from rhucrl.model import HallucinatedModel
 from rhucrl.policy.joint_policy import JointPolicy
+from rhucrl.utilities.util import get_default_model
 
 from .adversarial_agent import AdversarialAgent
 
@@ -39,71 +40,114 @@ class RARLAgent(AdversarialAgent):
         This is the crucial method as it needs to separate the actions.
         """
         super().observe(observation)
-        protagonist_dim_action = self.policy.protagonist_dim_action[0]
-        protagonist_observation = Observation(*tuple(o.clone() for o in observation))
-        protagonist_observation.action = observation.action[:protagonist_dim_action]
+        p_observation = observation.clone()
+        a_observation = observation.clone()
 
-        antagonist_observation = Observation(*observation)
-        antagonist_observation.action = observation.action[protagonist_dim_action:]
-        antagonist_observation.reward = -observation.reward
+        dim_action = self.policy.dim_action[0]
+        p_dim_action = self.policy.protagonist_dim_action[0]
+        a_dim_action = self.policy.antagonist_dim_action[0]
+        h_dim_action = 2 * dim_action - p_dim_action - a_dim_action
 
-        self.send_observations(protagonist_observation, antagonist_observation)
+        p_observation.action = torch.cat(
+            (
+                observation.action[: dim_action - a_dim_action],
+                observation.action[-h_dim_action:],
+            ),
+            -1,
+        )
+        a_observation.action = observation.action[-a_dim_action:]
+        a_observation.reward = -observation.reward
+
+        self.send_observations(p_observation, a_observation)
 
     @classmethod
-    def default(
-        cls,
+    def default(cls, environment, hallucinate=False, *args, **kwargs):
+        """Get default RARL agent."""
+        p_agent = RARLAgent.get_default_protagonist(
+            environment, hallucinate=hallucinate, *args, **kwargs
+        )
+        a_agent = RARLAgent.get_default_antagonist(
+            environment, hallucinate=hallucinate, *args, **kwargs
+        )
+
+        if hallucinate:
+            cm = Hallucinate(environment)
+        else:
+            cm = nullcontext()
+        with cm:
+            return super().default(
+                environment,
+                dim_action=environment.dim_action,
+                action_scale=environment.action_scale,
+                protagonist_agent=p_agent,
+                antagonist_agent=a_agent,
+                *args,
+                **kwargs,
+            )
+
+    @staticmethod
+    def get_default_protagonist(
         environment,
-        protagonist_dynamical_model=None,
-        antagonist_dynamical_model=None,
+        protagonist_name="SAC",
+        dynamical_model=None,
+        hallucinate=False,
+        strong_antagonist=False,
         *args,
         **kwargs,
     ):
-        """Get default RARL agent."""
-        p_agent = RARLAgent.get_default_protagonist(
-            environment,
-            dynamical_model=deep_copy_module(protagonist_dynamical_model),
-            *args,
-            **kwargs,
-        )
-        a_agent = RARLAgent.get_default_antagonist(
-            environment,
-            dynamical_model=deep_copy_module(antagonist_dynamical_model),
-            *args,
-            **kwargs,
-        )
-
-        return super().default(
-            environment,
-            dim_action=environment.dim_action,
-            action_scale=environment.action_scale,
-            protagonist_agent=p_agent,
-            antagonist_agent=a_agent,
-            *args,
-            **kwargs,
-        )
-
-    @staticmethod
-    def get_default_protagonist(environment, protagonist_name="SAC", *args, **kwargs):
         """Get protagonist using RARL."""
         p_env = adversarial_to_protagonist_environment(environment)
-        p_a = getattr(import_module("rllib.agent"), f"{protagonist_name}Agent").default(
-            p_env, comment="Protagonist", *args, **kwargs
+        dynamical_model = get_default_model(
+            p_env, known_model=dynamical_model, hallucinate=hallucinate
         )
-        if hasattr(p_a, "dynamical_model"):
-            p_a.dynamical_model.dim_action = p_env.protagonist_dim_action
-
-        return p_a
+        if hallucinate:
+            cm = Hallucinate(p_env)
+        else:
+            cm = nullcontext()
+        with cm:
+            return getattr(
+                import_module("rllib.agent"), f"{protagonist_name}Agent"
+            ).default(
+                p_env,
+                comment="Protagonist",
+                dynamical_model=dynamical_model,
+                *args,
+                **kwargs,
+            )
 
     @staticmethod
-    def get_default_antagonist(environment, antagonist_name="SAC", *args, **kwargs):
+    def get_default_antagonist(
+        environment,
+        antagonist_name="SAC",
+        dynamical_model=None,
+        hallucinate=False,
+        strong_antagonist=False,
+        *args,
+        **kwargs,
+    ):
         """Get protagonist using RARL."""
-        strong_antagonist = isinstance(
-            kwargs.get("dynamical_model", None), HallucinatedModel
+        a_env = adversarial_to_antagonist_environment(
+            environment, hallucinate and strong_antagonist
         )
-        a_env = adversarial_to_antagonist_environment(environment, strong_antagonist)
-        a_a = getattr(import_module("rllib.agent"), f"{antagonist_name}Agent").default(
-            a_env, comment="Antagonist", *args, **kwargs
+        dynamical_model = get_default_model(
+            a_env,
+            known_model=dynamical_model,
+            hallucinate=hallucinate,
+            protagonist=False,
+            strong_antagonist=strong_antagonist,
+            weak_antagonist=not strong_antagonist,
         )
-        if hasattr(a_a, "dynamical_model"):
-            a_a.dynamical_model.dim_action = environment.antagonist_dim_action
-        return a_a
+        if hallucinate and strong_antagonist:
+            cm = Hallucinate(environment)
+        else:
+            cm = nullcontext()
+        with cm:
+            return getattr(
+                import_module("rllib.agent"), f"{antagonist_name}Agent"
+            ).default(
+                a_env,
+                comment="Antagonist",
+                dynamical_model=dynamical_model,
+                *args,
+                **kwargs,
+            )

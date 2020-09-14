@@ -32,6 +32,15 @@ def adversarial_solver(
                 self.h_dim_action = (0,)
             self.strong_antagonist = strong_antagonist
 
+            self.dim_action = (
+                self.p_dim_action[0] + self.a_dim_action[0] + self.h_dim_action[0]
+            )
+
+            self.mean = None
+            self.covariance = (self._scale ** 2) * torch.eye(self.dim_action).repeat(
+                self.horizon, 1, 1
+            )
+
         def forward(self, state):
             """Return action that solves the MPC problem."""
             self.dynamical_model.eval()
