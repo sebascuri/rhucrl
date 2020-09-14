@@ -11,7 +11,7 @@ from rhucrl.agent.adversarial_agent import AdversarialAgent
 
 
 def plot_logger(logger: Logger, title_str: str) -> None:
-    """Plott logger."""
+    """Plot logger."""
     for key in logger.keys:
         plt.plot(logger.get(key))
         plt.xlabel("Episode")
@@ -79,8 +79,6 @@ def train_adversarial_agent(
 
     if plot_flag:
         plot_logger(agent.logger, f"{agent.name} in {environment.name}")
-        plot_logger(
-            agent.protagonist_agent.logger, f"Protagonist in {environment.name}"
-        )
-        plot_logger(agent.antagonist_agent.logger, f"Antagonist in {environment.name}")
+        for role, agent_ in agent.agents.items():
+            plot_logger(agent_.logger, f"{role} in {environment.name}")
     print(agent)
