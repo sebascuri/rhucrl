@@ -5,7 +5,6 @@ from rllib.model import TransformedModel
 
 from rhucrl.environment.wrappers import (
     AdversarialPendulumWrapper,
-    HallucinationWrapper,
     MujocoAdversarialWrapper,
     NoisyActionRobustWrapper,
     ProbabilisticActionRobustWrapper,
@@ -34,35 +33,36 @@ def wrap_adversarial_environment(
     return environment
 
 
-def get_default_models(
-    environment, known_model=None, hallucinate=False, strong_antagonist=True
+def get_default_model(
+    environment,
+    known_model=None,
+    hallucinate=False,
+    protagonist=True,
+    weak_antagonist=False,
+    strong_antagonist=False,
 ):
-    """Get default protagonist/antagonist models.
-
-    Notes
-    -----
-    This has a side effect on the environment.
-    """
+    """Get default protagonist/antagonist models."""
     if known_model is not None:
-        expected_model = TransformedModel(known_model, [])
-        return expected_model, expected_model
-
-    if hallucinate:
-        dynamical_model = HallucinatedModel.default(environment)
-        environment.add_wrapper(HallucinationWrapper)
+        if not isinstance(known_model, TransformedModel):
+            dynamical_model = TransformedModel(known_model, [])
+        else:
+            dynamical_model = known_model
     else:
-        dynamical_model = TransformedModel.default(environment)
+        if hallucinate:
+            dynamical_model = HallucinatedModel.default(environment)
+        else:
+            dynamical_model = TransformedModel.default(environment)
 
-    expected_model = TransformedModel(
-        dynamical_model.base_model, dynamical_model.forward_transformations
-    )
-    protagonist_dynamical_model = dynamical_model
-    if strong_antagonist:
-        antagonist_dynamical_model = dynamical_model
+    if protagonist:
+        return dynamical_model
+    elif weak_antagonist:
+        return TransformedModel(
+            dynamical_model.base_model, dynamical_model.forward_transformations
+        )
+    elif strong_antagonist:
+        return dynamical_model
     else:
-        antagonist_dynamical_model = expected_model
-
-    return protagonist_dynamical_model, antagonist_dynamical_model
+        raise NotImplementedError
 
 
 def get_agent(agent, environment, **kwargs):
