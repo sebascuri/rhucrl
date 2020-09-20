@@ -25,7 +25,10 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
         if not isinstance(self.action_space, Box):
             raise TypeError("Only continuous actions allowed.")
         self.protagonist_dim_action = self.env.action_space.shape
-        self.antagonist_dim_action = antagonist_high.shape
+        if alpha > 0:
+            self.antagonist_dim_action = antagonist_high.shape
+        else:
+            self.antagonist_dim_action = (0,)
 
         self.antagonist_low = antagonist_low
         self.antagonist_high = antagonist_high
@@ -43,16 +46,19 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
             raise ValueError(f"alpha must be strictly positive and {alpha} was given.")
         self._alpha = alpha
 
-        self.action_space = Box(
-            low=np.concatenate(
-                (self.env.unwrapped.action_space.low, alpha * self.antagonist_low)
-            ),
-            high=np.concatenate(
-                (self.env.unwrapped.action_space.high, alpha * self.antagonist_high)
-            ),
-            shape=(self.protagonist_dim_action[0] + self.antagonist_dim_action[0],),
-            dtype=np.float32,
-        )
+        if alpha == 0:
+            self.action_space = self.env.unwrapped.action_space
+        else:
+            self.action_space = Box(
+                low=np.concatenate(
+                    (self.env.unwrapped.action_space.low, alpha * self.antagonist_low)
+                ),
+                high=np.concatenate(
+                    (self.env.unwrapped.action_space.high, alpha * self.antagonist_high)
+                ),
+                shape=(self.protagonist_dim_action[0] + self.antagonist_dim_action[0],),
+                dtype=np.float32,
+            )
 
     def step(self, action):
         """See `gym.Env.step()'."""

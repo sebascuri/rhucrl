@@ -29,6 +29,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         antagonist_agent=None,
         weak_antagonist_agent=None,
         tensorboard=False,
+        alpha=0.1,
         *args,
         **kwargs,
     ):
@@ -48,6 +49,11 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
                 )
                 if "Antagonist" in role:
                     self.antagonist_agents.update({role: agent})
+
+        if alpha == 0:  # No opponents.
+            self.antagonist_agents = {}
+            self.agents.pop("Antagonist", None)
+            self.agents.pop("WeakAntagonist", None)
 
     def send_observations(self, protagonist_observation, antagonist_observation):
         """Send the observations to each player."""
@@ -149,13 +155,6 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         self.agents["WeakAntagonist"].load(path)
 
     @classmethod
-    def default(
-        cls,
-        environment,
-        protagonist_dynamical_model=None,
-        antagonist_dynamical_model=None,
-        *args,
-        **kwargs,
-    ):
+    def default(cls, environment, *args, **kwargs):
         """Get default agent."""
         return super().default(environment, *args, **kwargs)

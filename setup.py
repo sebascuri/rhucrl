@@ -33,10 +33,10 @@ setup(
     python_requires=">=3.7.0",
     packages=find_packages(exclude=["docs"]),
     install_requires=[
-        "rllib @ git+ssh://git@github.com/sebascuri/rllib@master#egg=rllib"
+        "rllib @ git+ssh://git@github.com/sebascuri/rllib@dev#egg=rllib"
         "numpy>=1.14,<2",
         "scipy>=1.3.0,<1.4.0",
-        "torch>=1.5.0,<1.7.0",
+        "torch>=1.6.0,<1.7.0",
         "gym>=0.15.4",
         "atari_py>=0.2.6",
         "tqdm>=4.0.0,<5.0",

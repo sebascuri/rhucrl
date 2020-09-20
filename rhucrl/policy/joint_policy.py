@@ -23,19 +23,33 @@ class JointPolicy(AdversarialPolicy):
         *args,
         **kwargs,
     ) -> None:
-        assert protagonist_policy.deterministic == antagonist_policy.deterministic
-        assert protagonist_policy.dim_state == antagonist_policy.dim_state
-        super().__init__(
-            *args,
-            dim_state=protagonist_policy.dim_state,
-            dim_action=dim_action,
-            protagonist_dim_action=protagonist_policy.dim_action,
-            antagonist_dim_action=antagonist_policy.dim_action,
-            deterministic=protagonist_policy.deterministic,
-            action_scale=action_scale,
-            dist_params=protagonist_policy.dist_params,
-            **kwargs,
-        )  # type: ignore
+        if antagonist_policy is None:
+            super().__init__(
+                *args,
+                dim_state=protagonist_policy.dim_state,
+                dim_action=dim_action,
+                protagonist_dim_action=protagonist_policy.dim_action,
+                antagonist_dim_action=(0,),
+                deterministic=protagonist_policy.deterministic,
+                action_scale=action_scale,
+                dist_params=protagonist_policy.dist_params,
+                **kwargs,
+            )
+            self.only_protagonist = True
+        else:
+            assert protagonist_policy.deterministic == antagonist_policy.deterministic
+            assert protagonist_policy.dim_state == antagonist_policy.dim_state
+            super().__init__(
+                *args,
+                dim_state=protagonist_policy.dim_state,
+                dim_action=dim_action,
+                protagonist_dim_action=protagonist_policy.dim_action,
+                antagonist_dim_action=antagonist_policy.dim_action,
+                deterministic=protagonist_policy.deterministic,
+                action_scale=action_scale,
+                dist_params=protagonist_policy.dist_params,
+                **kwargs,
+            )  # type: ignore
         self.protagonist_policy = protagonist_policy
         self.antagonist_policy = antagonist_policy
 

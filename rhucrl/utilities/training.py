@@ -63,7 +63,8 @@ def train_adversarial_agent(
         agent.train_only_antagonist()
     else:
         raise NotImplementedError(f"{mode} has to be in {allowed}")
-
+    if num_episodes == 0:
+        return
     rollout_agent(
         environment,
         agent,

@@ -1,5 +1,5 @@
 """Utility functions for RHUCRL project."""
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from rllib.dataset.transforms import AbstractTransform
 from rllib.model import AbstractModel, TransformedModel
@@ -13,15 +13,16 @@ def wrap_adversarial_environment(
     alpha: float,
     force_body_names: Optional[List[str]] = ...,
 ) -> AdversarialEnv: ...
-def get_default_model(
+def get_default_models(
     environment: AdversarialEnv,
-    known_model: Optional[AbstractModel] = ...,
-    known_transforms: List[AbstractTransform] = ...,
+    known_dynamical_model: Optional[AbstractModel] = ...,
+    known_reward_model: Optional[AbstractModel] = ...,
+    known_termination_model: Optional[AbstractModel] = ...,
     hallucinate: bool = ...,
     protagonist: bool = ...,
     weak_antagonist: bool = ...,
     strong_antagonist: bool = ...,
-) -> TransformedModel: ...
+) -> Tuple[TransformedModel, TransformedModel, Optional[TransformedModel]]: ...
 def get_agent(
     agent: str, environment: AdversarialEnv, **kwargs: Any
 ) -> AdversarialAgent: ...

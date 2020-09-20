@@ -1,6 +1,7 @@
-from gym.envs.registration import register
+"""The objective of this experiment is to show robustness even with known models.
 
-register(
-    id="Pendulum-v1",
-    entry_point="exps.inverted_pendulum_swingup.utilities:PendulumV1Env",
-)
+1) Run the Nominal model.
+2) Evaluate the nominal model with an adversarial disturbance.
+3) Show how being robust while planning increases the disturbance.
+
+"""

@@ -1,23 +1,34 @@
 """Python Script Template."""
-from exps.inverted_pendulum_swingup.utilities import PendulumModel, PendulumReward
+from exps.inverted_pendulum_swingup.utilities import PendulumModel
 from exps.run import run
 from exps.utilities import get_command_line_parser
 
 parser = get_command_line_parser()
 parser.set_defaults(
-    environment="Pendulum-v1",
+    environment="PendulumSwingUp-v0",
     agent="AdversarialMPC",
     adversarial_wrapper="adversarial_pendulum",
-    alpha=0.1,
     force_body_names=["gravity", "mass"],
     horizon=40,
-    train_episodes=1,
+    train_episodes=0,
+    train_antagonist_episodes=0,
     exploration_episodes=0,
-    max_steps=200,
-    render=True,
+    eval_episodes=5,
+    nominal_model=False,
 )
 args = parser.parse_args()
-model = PendulumModel(alpha=args.alpha, force_body_names=args.force_body_names)
-reward_model = PendulumReward()
+model = PendulumModel(
+    alpha=args.alpha,
+    force_body_names=args.force_body_names,
+    wrapper=args.adversarial_wrapper,
+)
+if args.alpha == 0:
+    comment = "Nominal"
+else:
+    if args.nominal_model:
+        comment = f"Wrong Model "
+    else:
+        comment = f"Correct Model "
 
-agent = run(args, dynamical_model=model, reward_model=reward_model)
+    comment += f"{args.adversarial_wrapper} {args.alpha}"
+agent = run(args, dynamical_model=model, comment=comment)

@@ -1,45 +1,16 @@
 """Python Script Template."""
 import argparse
 
-import torch
 from gym.envs import registry
 from rllib.agent import AGENTS as BASE_AGENTS
 from rllib.agent import MODEL_FREE
-from rllib.model import AbstractModel
 
 from rhucrl.agent import AGENTS as ROBUST_AGENTS
 
 
-def healty_state(state: torch.Tensor, healthy_range=(-100, 100)):
-    """Check if state is in healthy range."""
-    min_state, max_state = healthy_range
-    return (min_state < state) * (state < max_state)
-
-
-class LargeStateTermination(AbstractModel):
-    """Hopper Termination Function."""
-
-    def __init__(self):
-        super().__init__(dim_state=(), dim_action=(), model_kind="termination")
-
-    @staticmethod
-    def is_healthy(state):
-        """Check if state is healthy."""
-        return healty_state(state).all(-1)
-
-    def forward(self, state, action, next_state=None):
-        """Return termination model logits."""
-        done = ~self.is_healthy(state)
-        return (
-            torch.zeros(*done.shape, 2)
-            .scatter_(dim=-1, index=(~done).long().unsqueeze(-1), value=-float("inf"))
-            .squeeze(-1)
-        )
-
-
 def get_command_line_parser():
     """Get command line parser."""
-    parser = argparse.ArgumentParser("Run experiment on RLLib.")
+    parser = argparse.ArgumentParser("Run experiment on RH-UCRL.")
     parser.add_argument(
         "--environment",
         default="HalfCheetah-v2",
@@ -77,15 +48,22 @@ def get_command_line_parser():
         choices=MODEL_FREE,
     )
 
+    parser.add_argument("--nominal-model", action="store_true", default=True)
     parser.add_argument("--hallucinate", action="store_true", default=False)
     parser.add_argument("--strong-antagonist", action="store_true", default=False)
     parser.add_argument("--alpha", default=5.0, type=float, help="Antagonist power.")
+
     parser.add_argument(
         "--adversarial-wrapper",
         default="external_force",
         type=str,
         help="Wrapper.",
-        choices=["noisy_action", "probabilistic_action", "external_force"],
+        choices=[
+            "noisy_action",
+            "probabilistic_action",
+            "external_force",
+            "adversarial_pendulum",
+        ],
     )
     parser.add_argument("--force-body-names", default=["torso"], type=str, nargs="+")
 
@@ -98,23 +76,46 @@ def get_command_line_parser():
     parser.add_argument("--seed", type=int, default=0, help="Random Seed.")
     parser.add_argument("--max-steps", type=int, default=1000, help="Maximum steps.")
     parser.add_argument(
-        "--train-episodes", type=int, default=1000, help="Total number of episodes."
+        "--train-episodes",
+        type=int,
+        default=1000,
+        help="Total number of episodes to train both protagonist and antagonist.",
+    )
+    parser.add_argument(
+        "--train-antagonist-episodes",
+        type=int,
+        default=200,
+        help="Total number of episodes to train only antagonist after protagonist.",
+    )
+    parser.add_argument(
+        "--eval-episodes",
+        type=int,
+        default=5,
+        help="Total number of episodes to train only antagonist.",
     )
     parser.add_argument(
         "--exploration-episodes",
         type=int,
-        default=10,
+        default=1,
         help="Explore for first n episodes and start policy learning afterwards.",
+    )
+    parser.add_argument(
+        "--exploration-steps",
+        type=int,
+        default=0,
+        help="Explore for first n steps and start policy learning afterwards.",
     )
     parser.add_argument(
         "--model-learn-exploration-episodes",
         type=int,
-        default=5,
+        default=1,
         help="Explore for first n episodes and start model learning afterwards.",
     )
 
     parser.add_argument(
         "--eval-frequency", type=int, default=10, help="Evaluate every n episodes."
     )
-    parser.add_argument("--render", action="store_true", default=False)
+    parser.add_argument("--render_train", action="store_true", default=False)
+    parser.add_argument("--render_eval", action="store_true", default=False)
+
     return parser
