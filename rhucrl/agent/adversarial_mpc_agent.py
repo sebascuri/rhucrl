@@ -47,6 +47,7 @@ class AdversarialMPCAgent(AdversarialAgent):
         hallucinate=False,
         strong_antagonist=False,
         nominal_model=False,
+        horizon=25,
         *args,
         **kwargs,
     ):
@@ -69,6 +70,7 @@ class AdversarialMPCAgent(AdversarialAgent):
                 reward_model=reward_model,
                 termination_model=termination_model,
                 action_scale=environment.action_scale,
+                horizon=horizon,
                 *args,
                 **kwargs,
             )
