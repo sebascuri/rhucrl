@@ -13,7 +13,7 @@ extras = {
     ],
     "mujoco": ["mujoco-py<2.1,>=2.0", "imageio-ffmpeg==0.4.1", "dm_control"],
     "logging": ["tensorboard>=2.0,<3"],
-    "experiments": [
+    "experiment_helpers": [
         "lsf_runner==0.0.5",
         "torchvision>=0.6.0",
         "Pillow==5.4.1",

@@ -1,9 +1,9 @@
 """Python Script Template."""
 
+from exps.utilities import get_command_line_parser
 from rllib.util.training.agent_training import evaluate_agent
 from rllib.util.utilities import set_random_seed
 
-from exps.utilities import get_command_line_parser
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import HallucinationWrapper
 from rhucrl.utilities.training import train_adversarial_agent
