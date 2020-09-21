@@ -6,7 +6,7 @@ from lsf_runner import init_runner, make_commands
 
 runner = init_runner("RARL", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
-script = "train_nominal.py"
+script = "train_rarl.py"
 
 AGENTS = ["SAC"]
 EXPERIMENT = [
