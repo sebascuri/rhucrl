@@ -26,7 +26,7 @@ for experiment in EXPERIMENT:
             "environment": experiment["environment"],
             "protagonist-name": AGENTS,
             "alpha": experiment["alpha"],
-            "wrappers": experiment["wrapper"],
+            "adversarial-wrapper": experiment["wrapper"],
             "hallucinate": [False],
         },
     )
