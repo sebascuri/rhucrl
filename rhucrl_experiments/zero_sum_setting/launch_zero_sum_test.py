@@ -4,7 +4,7 @@ import os
 
 from lsf_runner import init_runner, make_commands
 
-runner = init_runner("ZeroSum", num_threads=2)
+runner = init_runner("ZeroSum_test", num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_zero_sum.py"
 
