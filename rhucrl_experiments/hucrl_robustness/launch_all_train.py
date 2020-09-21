@@ -15,10 +15,11 @@ environments = [
     "MBWalker2d-v0",
 ]
 
+AGENTS = ["SAC", "TD3", "DPG", "MPO", "PPO", "TRPO", "VMPO"]
 commands = make_commands(
     f"{cwd}/{script}",
     base_args={"alpha": 0, "hallucinate": False},
-    common_hyper_args={"seed": [0], "protagonist-name": ["SAC", "MPO", "PPO"]},
+    common_hyper_args={"seed": [0], "protagonist-name": AGENTS},
 )
 
 commands += make_commands(
@@ -36,9 +37,10 @@ commands += make_commands(
     base_args={"alpha": 0, "hallucinate": [True, False], "protagonist-name": "MVE"},
     common_hyper_args={
         "seed": [0],
-        "base-agent": ["SAC", "MPO", "BPTT", "PPO"],
+        "base-agent": AGENTS + ["BPTT"],
         "num-steps": [1, 4, 8],
     },
 )
 
+# print(len(commands))
 runner.run(commands)

@@ -7,7 +7,7 @@ parser.set_defaults(
     environment="MBHalfCheetah-v0",
     agent="RARL",
     alpha=0,
-    train_episodes=500,
+    train_episodes=1000,
     train_antagonist_episodes=500,
     eval_episodes=10,
 )
