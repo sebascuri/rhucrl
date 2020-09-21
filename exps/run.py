@@ -10,8 +10,8 @@ from rhucrl.utilities.training import train_adversarial_agent
 from rhucrl.utilities.util import get_agent, wrap_adversarial_environment
 
 
-def run(args, env_kwargs=None, **kwargs):
-    """Run main function with arguments."""
+def init_experiment(args, env_kwargs=None, **kwargs):
+    """Initialize experiment to get agent and environment."""
     env_kwargs = dict() if env_kwargs is None else env_kwargs
     if args.antagonist_name is None:
         args.antagonist_name = args.protagonist_name
@@ -35,7 +35,26 @@ def run(args, env_kwargs=None, **kwargs):
     if args.hallucinate:
         environment.add_wrapper(HallucinationWrapper)
 
+    return agent, environment
+
+
+def run(args, env_kwargs=None, **kwargs):
+    """Run main function with arguments."""
+    # %% Initialize experiment.
+    agent, environment = init_experiment(args, env_kwargs, **kwargs)
+
     # %% Train Agent.
+    train_all(agent, environment, args)
+
+    # %% Train Antagonist only.
+    train_antagonist(agent, environment, args)
+
+    # %% Evaluate agents
+    evaluate(agent, environment, args)
+
+
+def train_all(agent, environment, args):
+    """Train all agents."""
     train_adversarial_agent(
         mode="both",
         agent=agent,
@@ -47,7 +66,9 @@ def run(args, env_kwargs=None, **kwargs):
         render=args.render_train,
     )
 
-    # %% Train Antagonist only.
+
+def train_antagonist(agent, environment, args):
+    """Train antagonist agents."""
     train_adversarial_agent(
         mode="antagonist",
         agent=agent,
@@ -59,7 +80,9 @@ def run(args, env_kwargs=None, **kwargs):
         render=args.render_train,
     )
 
-    # %% Evaluate agents
+
+def evaluate(agent, environment, args):
+    """Evaluate agents."""
     evaluate_agent(
         agent=agent,
         environment=environment,
@@ -67,7 +90,6 @@ def run(args, env_kwargs=None, **kwargs):
         max_steps=args.max_steps,
         render=args.render_eval,
     )
-    return agent
 
 
 if __name__ == "__main__":

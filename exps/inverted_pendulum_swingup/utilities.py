@@ -32,8 +32,9 @@ class PendulumModel(AbstractModel):
         """Compute Next State distribution."""
         theta, omega = torch.atan2(state[..., 1], state[..., 0]), state[..., 2]
 
-        protagonist_action = action[..., 0].clone()
-
+        protagonist_action = (
+            action[..., 0].clone().clamp(-self.max_torque, self.max_torque)
+        )
         antagonist_action = action[..., 1:]
         g = 10.0
         m = 1.0
@@ -41,7 +42,7 @@ class PendulumModel(AbstractModel):
         dt = 0.05
 
         if self.alpha == 0:
-            u = torch.clamp(protagonist_action, -self.max_torque, self.max_torque)
+            u = protagonist_action
         elif self.wrapper == "noisy_action":
             antagonist_action = antagonist_action[..., 0].clamp(
                 -self.max_torque, self.max_torque

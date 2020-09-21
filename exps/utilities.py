@@ -96,7 +96,7 @@ def get_command_line_parser():
     parser.add_argument(
         "--exploration-episodes",
         type=int,
-        default=1,
+        default=10,
         help="Explore for first n episodes and start policy learning afterwards.",
     )
     parser.add_argument(
@@ -108,7 +108,7 @@ def get_command_line_parser():
     parser.add_argument(
         "--model-learn-exploration-episodes",
         type=int,
-        default=1,
+        default=5,
         help="Explore for first n episodes and start model learning afterwards.",
     )
 
