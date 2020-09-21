@@ -4,7 +4,7 @@ import os
 
 from lsf_runner import init_runner, make_commands
 
-runner = init_runner("KnownModel", wall_time=24 * 60, num_threads=4)
+runner = init_runner("KnownModel", num_threads=4)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_nominal.py"
 
