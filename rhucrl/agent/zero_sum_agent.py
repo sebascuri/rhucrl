@@ -11,11 +11,7 @@ from .adversarial_agent import AdversarialAgent
 
 
 class ZeroSumAgent(AdversarialAgent):
-    """Zero-Sum Agent.
-
-    Zero-Sum has two dependent agents.
-    The protagonist receives (s, a, r, s') and the protagonist (s, a, -r, s').
-    """
+    """Zero-Sum Agent."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,7 +29,6 @@ class ZeroSumAgent(AdversarialAgent):
         """Send observations to both players.
 
         The protagonist receives (s, a, r, s') and the antagonist (s, a, -r, s').
-
         """
         super().observe(observation)
         protagonist_observation = observation.clone()
@@ -83,7 +78,7 @@ class ZeroSumAgent(AdversarialAgent):
             hallucinate=hallucinate,
             strong_antagonist=strong_antagonist,
         )
-        if hallucinate and strong_antagonist:
+        if hallucinate:
             cm = Hallucinate(environment)
         else:
             cm = nullcontext()
@@ -110,15 +105,20 @@ class ZeroSumAgent(AdversarialAgent):
                 hallucinate=hallucinate,
                 strong_antagonist=not strong_antagonist,
             )
-            wa_agent = ZeroSumAgent.get_default_antagonist(
-                environment,
-                dynamical_model=dynamical_model,
-                reward_model=reward_model,
-                termination_model=termination_model,
-                strong_antagonist=False,
-                *args,
-                **kwargs,
-            )
+            if hallucinate:
+                cm = Hallucinate(environment)
+            else:
+                cm = nullcontext()
+            with cm:
+                wa_agent = ZeroSumAgent.get_default_antagonist(
+                    environment,
+                    dynamical_model=dynamical_model,
+                    reward_model=reward_model,
+                    termination_model=termination_model,
+                    strong_antagonist=False,
+                    *args,
+                    **kwargs,
+                )
             wa_agent.policy.base_policy = p_agent.policy.base_policy
             wa_agent.set_policy(wa_agent.policy)
             wa_agent.model_learning_algorithm = None

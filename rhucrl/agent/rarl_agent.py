@@ -47,9 +47,10 @@ class RARLAgent(AdversarialAgent):
             self.strong_antagonist = False
 
     def observe(self, observation) -> None:
-        """Send observations to both players.
+        """Send observations to both agents.
 
-        This is the crucial method as it needs to separate the actions.
+        Send to the protagonist (s, a_p, r, s', other)
+        Send to antagonist (s, a_a, -r, s', other).
         """
         super().observe(observation)
         p_observation = observation.clone()
@@ -77,6 +78,11 @@ class RARLAgent(AdversarialAgent):
         a_observation.reward = -observation.reward
 
         self.send_observations(p_observation, a_observation)
+
+    def load_protagonist(self, path):
+        """Load protagonist and copy policy to joint policy."""
+        super().load_protagonist(path)
+        self.policy.protagonist_policy = self.agents["Protagonist"].policy
 
     @classmethod
     def default(cls, environment, hallucinate=False, *args, **kwargs):

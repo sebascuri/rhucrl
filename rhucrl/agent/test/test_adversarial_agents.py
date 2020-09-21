@@ -314,7 +314,7 @@ class TestZeroSum(object):
         assert antagonist.policy.dim_state == dim_state
         assert antagonist.dynamical_model.dim_state == dim_state
         assert antagonist.dynamical_model.dim_action == dim_action
-        if hallucinate and strong_antagonist:
+        if hallucinate:
             assert antagonist.policy.dim_action[0] == dim_state[0] + dim_action[0]
         else:
             assert antagonist.policy.dim_action == dim_action
@@ -325,7 +325,10 @@ class TestZeroSum(object):
             assert weak_antagonist.policy.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_state == dim_state
             assert weak_antagonist.dynamical_model.dim_action == dim_action
-            assert weak_antagonist.policy.dim_action == dim_action
+            if hallucinate:
+                assert antagonist.policy.dim_action[0] == dim_state[0] + dim_action[0]
+            else:
+                assert antagonist.policy.dim_action == dim_action
         else:
             assert "WeakAntagonist" not in agent.agents
 
