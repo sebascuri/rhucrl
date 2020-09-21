@@ -9,17 +9,7 @@ from rhucrl_experiments.utilities import get_command_line_parser
 
 parser = get_command_line_parser()
 parser.set_defaults(
-    environment="MBHalfCheetah-v0",
-    agent="ZeroSum",
-    protagonist_name="MVE",
-    adversarial_wrapper="noisy_action",
-    alpha=0.1,
-    exploration_episodes=0,
-    train_episodes=50,
-    train_antagonist_episodes=5,
-    eval_episodes=10,
-    hallucinate=True,
-    strong_antagonist=True,
+    agent="ZeroSum", train_episodes=400, train_antagonist_episodes=200, eval_episodes=10
 )
 args = parser.parse_args()
 
