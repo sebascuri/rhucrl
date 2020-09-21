@@ -24,9 +24,10 @@ commands = make_commands(
 
 commands += make_commands(
     f"{cwd}/{script}",
-    base_args={"alpha": 0, "hallucinate": [True, False]},
+    base_args={"alpha": 0},
     common_hyper_args={
         "seed": [0],
+        "hallucinate": [True, False],
         "protagonist-name": ["BPTT"],
         "num-steps": [1, 4, 8],
     },
@@ -34,9 +35,10 @@ commands += make_commands(
 
 commands += make_commands(
     f"{cwd}/{script}",
-    base_args={"alpha": 0, "hallucinate": [True, False], "protagonist-name": "MVE"},
+    base_args={"alpha": 0, "protagonist-name": "MVE"},
     common_hyper_args={
         "seed": [0],
+        "hallucinate": [True, False],
         "base-agent": AGENTS + ["BPTT"],
         "num-steps": [1, 4, 8],
     },
