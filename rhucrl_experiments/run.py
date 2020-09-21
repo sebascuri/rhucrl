@@ -1,6 +1,5 @@
 """Python Script Template."""
 
-from exps.utilities import get_command_line_parser
 from rllib.util.training.agent_training import evaluate_agent
 from rllib.util.utilities import set_random_seed
 
@@ -8,6 +7,7 @@ from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import HallucinationWrapper
 from rhucrl.utilities.training import train_adversarial_agent
 from rhucrl.utilities.util import get_agent, wrap_adversarial_environment
+from rhucrl_experiments.utilities import get_command_line_parser
 
 
 def init_experiment(args, env_kwargs=None, **kwargs):
