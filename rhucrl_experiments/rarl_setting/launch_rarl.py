@@ -27,10 +27,9 @@ EXPERIMENT = [
     },
 ]
 
-commands = []
 for experiment in EXPERIMENT:
     # MODEL-FREE
-    commands += make_commands(
+    commands = make_commands(
         f"{cwd}/{script}",
         base_args={"seed": 0},
         common_hyper_args={
@@ -41,9 +40,10 @@ for experiment in EXPERIMENT:
             "hallucinate": [False],
         },
     )
+    runner.run_batch(commands)
 
     # MODEL-BASED + Hallucination + weak/strong
-    commands += make_commands(
+    commands = make_commands(
         f"{cwd}/{script}",
         base_args={"seed": 0},
         common_hyper_args={
@@ -56,9 +56,10 @@ for experiment in EXPERIMENT:
             "num-steps": [1, 4],
         },
     )
+    runner.run_batch(commands)
 
     # MODEL-BASED + Non-Hallucination.
-    commands += make_commands(
+    commands = make_commands(
         f"{cwd}/{script}",
         base_args={"seed": [0]},
         common_hyper_args={
@@ -71,9 +72,10 @@ for experiment in EXPERIMENT:
             "num-steps": [1, 4],
         },
     )
+    runner.run_batch(commands)
 
     # MODEL-Augmented + Hallucination.
-    commands += make_commands(
+    commands = make_commands(
         f"{cwd}/{script}",
         base_args={"seed": 0},
         common_hyper_args={
@@ -87,9 +89,10 @@ for experiment in EXPERIMENT:
             "base-agent": AGENTS + ["BPTT"],
         },
     )
+    runner.run_batch(commands)
 
     # MODEL-Augmented + Non-Hallucination.
-    commands += make_commands(
+    commands = make_commands(
         f"{cwd}/{script}",
         base_args={"seed": 0},
         common_hyper_args={
@@ -104,5 +107,4 @@ for experiment in EXPERIMENT:
         },
     )
 
-print(len(commands))
-# runner.run(commands)
+    runner.run_batch(commands)
