@@ -1,6 +1,6 @@
 """Python Script Template."""
-from exps.run import evaluate, init_experiment, train_all
-from exps.utilities import get_command_line_parser
+from rhucrl_experiments.run import evaluate, init_experiment, train_all
+from rhucrl_experiments.utilities import get_command_line_parser
 
 parser = get_command_line_parser()
 parser.set_defaults(

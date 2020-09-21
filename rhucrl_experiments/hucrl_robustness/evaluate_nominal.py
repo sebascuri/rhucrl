@@ -1,8 +1,8 @@
 """Python Script Template."""
 import os
 
-from exps.run import evaluate, init_experiment, train_antagonist
-from exps.utilities import get_command_line_parser
+from rhucrl_experiments.run import evaluate, init_experiment, train_antagonist
+from rhucrl_experiments.utilities import get_command_line_parser
 
 
 def get_nominal_path(protagonist_agent):

@@ -1,14 +1,20 @@
 """Python Script Template."""
-from exps.run import evaluate, init_experiment, train_all, train_antagonist
-from exps.utilities import get_command_line_parser
+from rhucrl_experiments.run import (
+    evaluate,
+    init_experiment,
+    train_all,
+    train_antagonist,
+)
+from rhucrl_experiments.utilities import get_command_line_parser
 
 parser = get_command_line_parser()
 parser.set_defaults(
     environment="MBHalfCheetah-v0",
-    agent="RARL",
+    agent="ZeroSum",
     protagonist_name="MVE",
     adversarial_wrapper="noisy_action",
     alpha=0.1,
+    exploration_episodes=0,
     train_episodes=50,
     train_antagonist_episodes=5,
     eval_episodes=10,
