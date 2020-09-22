@@ -9,7 +9,7 @@ from rhucrl_experiments.utilities import get_command_line_parser
 
 parser = get_command_line_parser()
 parser.set_defaults(
-    agent="RARL", train_episodes=400, train_antagonist_episodes=200, eval_episodes=10
+    agent="RARL", train_episodes=400, train_antagonist_episodes=100, eval_episodes=10
 )
 args = parser.parse_args()
 

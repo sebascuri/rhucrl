@@ -8,25 +8,26 @@ runner = init_runner("RARL", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_rarl.py"
 
-AGENTS = ["SAC"]
+AGENTS = ["TD3"]
 EXPERIMENT = [
     {
         "environment": ["MBHalfCheetah-v0", "MBHopper-v0", "MBWalker2d-v0"],
-        "alpha": [0.05, 0.1, 0.15, 0.2, 0.25],
+        "alpha": [0.01, 0.05, 0.1, 0.15, 0.2],
         "wrapper": ["noisy_action", "probabilistic_action"],
     },
     {
         "environment": ["MBHalfCheetah-v0", "MBHopper-v0", "MBWalker2d-v0"],
-        "alpha": [0.5, 1.0, 5.0, 10.0],
+        "alpha": [1.0, 5.0, 10.0],
         "wrapper": ["external_force"],
     },
     {
         "environment": ["PendulumSwingUp-v0"],
-        "alpha": [0.05, 0.1, 0.15, 0.2, 0.25],
-        "wrapper": ["noisy_action", "probabilistic_action"],
+        "alpha": [0.01, 0.05, 0.1, 0.15, 0.2],
+        "wrapper": ["noisy_action", "probabilistic_action", "adversarial_pendulum"],
     },
 ]
 
+command_count = []
 for experiment in EXPERIMENT:
     # MODEL-FREE
     commands = make_commands(
@@ -40,7 +41,8 @@ for experiment in EXPERIMENT:
             "hallucinate": [False],
         },
     )
-    runner.run_batch(commands)
+    command_count += commands
+    # runner.run_batch(commands)
 
     # MODEL-BASED + Hallucination + weak/strong
     commands = make_commands(
@@ -56,7 +58,8 @@ for experiment in EXPERIMENT:
             "num-steps": [1, 4],
         },
     )
-    runner.run_batch(commands)
+    command_count += commands
+    # runner.run_batch(commands)
 
     # MODEL-BASED + Non-Hallucination.
     commands = make_commands(
@@ -69,10 +72,11 @@ for experiment in EXPERIMENT:
             "adversarial-wrapper": experiment["wrapper"],
             "hallucinate": [False],
             "strong-antagonist": [False],
-            "num-steps": [1, 4],
+            "num-steps": [1],
         },
     )
-    runner.run_batch(commands)
+    command_count += commands
+    # runner.run_batch(commands)
 
     # MODEL-Augmented + Hallucination.
     commands = make_commands(
@@ -89,7 +93,8 @@ for experiment in EXPERIMENT:
             "base-agent": AGENTS + ["BPTT"],
         },
     )
-    runner.run_batch(commands)
+    command_count += commands
+    # runner.run_batch(commands)
 
     # MODEL-Augmented + Non-Hallucination.
     commands = make_commands(
@@ -102,9 +107,11 @@ for experiment in EXPERIMENT:
             "adversarial-wrapper": experiment["wrapper"],
             "hallucinate": [False],
             "strong-antagonist": [False],
-            "num-steps": [1, 4],
+            "num-steps": [1],
             "base-agent": AGENTS + ["BPTT"],
         },
     )
+    command_count += commands
+    # runner.run_batch(commands)
 
-    runner.run_batch(commands)
+print(len(command_count))
