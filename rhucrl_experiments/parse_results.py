@@ -14,16 +14,25 @@ def get_name(h_params):
         protagonist_name += f"-{h_params.base_agent[0]}"
     if protagonist_name in ["MVE", "Dyna", "STEVE", "BPTT"]:
         protagonist_name += f"-{h_params.num_steps[0]}"
-    alpha = h_params.alpha[0]
-    hallucinate = h_params.hallucinate[0]
-    strong = h_params.strong_antagonist[0]
-    wrapper = h_params.adversarial_wrapper[0]
 
+    label = protagonist_name
+    if h_params.hallucinate[0]:
+        hallucination = True
+        if h_params.strong_antagonist[0]:
+            label, strong = "H-" + protagonist_name + "-strong", True
+        else:
+            label, strong = "H-" + protagonist_name + "-weak", False
+    else:
+        hallucination, strong = False, False
+
+    wrapper = h_params.adversarial_wrapper[0]
+    alpha = h_params.alpha[0]
     return dict(
         protagonist_name=protagonist_name,
         wrapper=wrapper,
         alpha=alpha,
-        hallucinate=hallucinate,
+        label=label,
+        hallucination=hallucination,
         strong=strong,
     )
 
