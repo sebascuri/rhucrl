@@ -24,7 +24,10 @@ def get_name(h_params):
 def get_player_data_frame(run_dir, player="Protagonist"):
     """Get Player dataframe."""
     agent_listdir = os.listdir(run_dir)
-    name = [*filter(lambda x: player in x, agent_listdir)][0]
+    agents = [*filter(lambda x: player in x, agent_listdir)]
+    if len(agents) == 0:
+        return pd.DataFrame()
+    name = agents[0]
     player_dir = f"{run_dir}/{name}"
     player_dir = player_dir + "/" + os.listdir(player_dir)[0]
     if len(os.listdir(player_dir)) == 0:
