@@ -4,7 +4,7 @@ import os
 
 from lsf_runner import init_runner, make_commands
 
-runner = init_runner("RARL-MF", wall_time=24 * 60, num_threads=2)
+runner = init_runner("RARL-MF", num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_rarl.py"
 
