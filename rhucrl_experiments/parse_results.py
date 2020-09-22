@@ -18,7 +18,14 @@ def get_name(h_params):
     hallucinate = h_params.hallucinate[0]
     strong = h_params.strong_antagonist[0]
     wrapper = h_params.adversarial_wrapper[0]
-    return f"{protagonist_name}_{wrapper}_{alpha}_{hallucinate}_{strong}"
+
+    return dict(
+        protagonist_name=protagonist_name,
+        wrapper=wrapper,
+        alpha=alpha,
+        hallucinate=hallucinate,
+        strong=strong,
+    )
 
 
 def get_player_data_frame(run_dir, player="Protagonist"):
@@ -33,6 +40,13 @@ def get_player_data_frame(run_dir, player="Protagonist"):
     if len(os.listdir(player_dir)) == 0:
         return pd.DataFrame()
     return pd.read_json(f"{player_dir}/statistics.json")
+
+
+def extend_data_frame(df, name_dict):
+    """Extend data frame with a name dictionary."""
+    df["counter"] = range(len(df))
+    for key, value in name_dict.items():
+        df[key] = value
 
 
 def get_all_data_frames(base_dir="runs/RARLAgent/"):
@@ -52,23 +66,20 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
         if H_PARAMS not in agent_listdir:
             continue
         hyper_params = pd.read_json(f"{run_dir}/{H_PARAMS}")
-        name = f"{environment}_{get_name(hyper_params)}"
+        name_dict = get_name(hyper_params)
+        name_dict.update(environment=environment)
 
         joint_df_ = pd.read_json(f"{run_dir}/{STATISTICS}")
-        joint_df_["counter"] = range(len(joint_df_))
-        joint_df_["name"] = name
+        extend_data_frame(joint_df_, name_dict)
 
         protagonist_df_ = get_player_data_frame(run_dir, player="Protagonist")
-        protagonist_df_["counter"] = range(len(protagonist_df_))
-        protagonist_df_["name"] = name
+        extend_data_frame(protagonist_df_, name_dict)
 
         antagonist_df_ = get_player_data_frame(run_dir, player="Antagonist")
-        antagonist_df_["counter"] = range(len(antagonist_df_))
-        antagonist_df_["name"] = name
+        extend_data_frame(antagonist_df_, name_dict)
 
         weak_antagonist_df_ = get_player_data_frame(run_dir, player="WeakAntagonist")
-        weak_antagonist_df_["counter"] = range(len(weak_antagonist_df_))
-        weak_antagonist_df_["name"] = name
+        extend_data_frame(weak_antagonist_df_, name_dict)
 
         joint_df = pd.concat([joint_df, joint_df_])
         protagonist_df = pd.concat([protagonist_df, protagonist_df_])
@@ -76,3 +87,9 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
         weak_antagonist_df = pd.concat([weak_antagonist_df, weak_antagonist_df_])
 
     return joint_df, protagonist_df, antagonist_df, weak_antagonist_df
+
+
+if __name__ == "__main__":
+    base_dir = "runs/RARLAgent/"
+    joint, protagonist, antagonist, weak_antagonist = get_all_data_frames(base_dir)
+    protagonist.to_pickle("Nominal.pkl")
