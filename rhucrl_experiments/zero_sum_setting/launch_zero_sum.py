@@ -8,7 +8,7 @@ runner = init_runner("ZeroSum", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_zero_sum.py"
 
-AGENTS = ["SAC"]
+AGENTS = ["TD3"]
 EXPERIMENT = [
     {
         "environment": ["MBHalfCheetah-v0", "MBHopper-v0", "MBWalker2d-v0"],
