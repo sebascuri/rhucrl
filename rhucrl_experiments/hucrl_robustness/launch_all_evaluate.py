@@ -42,7 +42,7 @@ commands += make_commands(
     common_hyper_args={
         "seed": [0],
         "environment": ENVIRONMENTS,
-        "base-agent": ["SAC", "MPO", "BPTT", "PPO"],
+        "base-agent-name": ["SAC", "MPO", "BPTT", "PPO"],
         "num-steps": [1, 4, 8],
     },
 )

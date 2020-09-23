@@ -6,7 +6,7 @@ from lsf_runner import init_runner, make_commands
 
 from rhucrl_experiments.get_environment import get_environment
 
-runner = init_runner("TrainKnownModel", wall_time=24 * 60, num_threads=4)
+runner = init_runner("TrainKnownModel", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_nominal.py"
 
@@ -53,9 +53,9 @@ commands += make_commands(
         "protagonist-name": ["Dyna", "MVE"],
         "environment": ENVIRONMENTS,
         "hallucinate": [True, False],
-        "base-agent": ["TD3", "MPO", "BPTT"],
+        "base-agent-name": ["TD3", "MPO", "BPTT"],
     },
 )
 
 print(len(commands))
-runner.run([commands[0]])
+runner.run(commands)

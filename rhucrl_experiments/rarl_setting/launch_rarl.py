@@ -90,7 +90,7 @@ for experiment in EXPERIMENT:
             "hallucinate": [True],
             "strong-antagonist": [True, False],
             "num-steps": [1, 4],
-            "base-agent": AGENTS + ["BPTT"],
+            "base-agent-name": AGENTS + ["BPTT"],
         },
     )
     command_count += commands
@@ -108,7 +108,7 @@ for experiment in EXPERIMENT:
             "hallucinate": [False],
             "strong-antagonist": [False],
             "num-steps": [1],
-            "base-agent": AGENTS + ["BPTT"],
+            "base-agent-name": AGENTS + ["BPTT"],
         },
     )
     command_count += commands

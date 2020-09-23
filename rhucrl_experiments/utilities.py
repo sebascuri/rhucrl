@@ -41,7 +41,7 @@ def get_command_line_parser():
         choices=BASE_AGENTS + [None],
     )
     parser.add_argument(
-        "--base-agent",
+        "--base-agent-name",
         default=None,
         type=str,
         help="Base agents for Model-Based Augmented agents.",

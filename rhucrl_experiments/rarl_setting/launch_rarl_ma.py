@@ -57,7 +57,7 @@ for experiment in EXPERIMENT:
             "hallucinate": [False],
             "strong-antagonist": [False],
             "num-steps": [1],
-            "base-agent": AGENTS,
+            "base-agent-name": AGENTS,
         },
     )
     runner.run_batch(commands)
