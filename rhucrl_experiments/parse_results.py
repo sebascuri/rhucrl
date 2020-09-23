@@ -99,6 +99,8 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
 
 
 if __name__ == "__main__":
+
     base_dir = "runs/RARLAgent/"
+    # base_dir = "runs/ZeroSumAgent"
     joint, protagonist, antagonist, weak_antagonist = get_all_data_frames(base_dir)
-    protagonist.to_pickle("Nominal.pkl")
+    # protagonist.to_pickle("Nominal.pkl")

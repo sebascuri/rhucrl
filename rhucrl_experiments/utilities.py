@@ -45,7 +45,7 @@ def get_command_line_parser():
         default=None,
         type=str,
         help="Base agents for Model-Based Augmented agents.",
-        choices=MODEL_FREE,
+        choices=MODEL_FREE + ["BPTT", "SVG"],
     )
 
     parser.add_argument("--nominal-model", action="store_true", default=True)
