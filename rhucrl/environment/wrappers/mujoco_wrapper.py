@@ -14,6 +14,7 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
         force_body_names = [] if force_body_names is None else force_body_names
         if force_body_names[0] not in env.model.body_names:
             force_body_names = [env.model.body_names[2]]
+            alpha = alpha / 10.0
 
         self.force_body_names = {
             name: env.model.body_names.index(name) for name in force_body_names
