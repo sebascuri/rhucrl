@@ -16,7 +16,7 @@ def init_experiment(args, env_kwargs=None, **kwargs):
     if args.antagonist_name is None:
         args.antagonist_name = args.protagonist_name
 
-    arg_dict = vars(args)
+    arg_dict = vars(args).copy()
     arg_dict.update(kwargs)
     set_random_seed(args.seed)
 
@@ -35,7 +35,7 @@ def init_experiment(args, env_kwargs=None, **kwargs):
     if args.hallucinate:
         environment.add_wrapper(HallucinationWrapper)
 
-    agent.logger.save_hparams(arg_dict)
+    agent.logger.save_hparams(vars(args))
     return agent, environment
 
 

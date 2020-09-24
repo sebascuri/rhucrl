@@ -55,9 +55,9 @@ class ProbabilisticActionRobustWrapper(AdversarialWrapper):
 
         # Choose action at random.
         if np.random.rand() < self.alpha:
-            action = protagonist_action
-        else:
             action = antagonist_action
+        else:
+            action = protagonist_action
 
         return self.env.step(action)
 

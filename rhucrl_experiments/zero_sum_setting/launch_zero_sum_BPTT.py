@@ -1,60 +1,49 @@
 """Python Script Template."""
 
 import os
+import time
 
 from lsf_runner import init_runner, make_commands
+
+from rhucrl_experiments.zero_sum_setting.get_experiments import get_experiments
 
 runner = init_runner("ZeroSum-BPTT", num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "train_zero_sum.py"
 
-EXPERIMENT = [
-    {
-        "environment": ["MBHalfCheetah-v0", "MBHopper-v0", "MBWalker2d-v0"],
-        "alpha": [0.01, 0.05, 0.1, 0.15, 0.2],
-        "wrapper": ["noisy_action", "probabilistic_action"],
-    },
-    {
-        "environment": ["MBHalfCheetah-v0", "MBHopper-v0", "MBWalker2d-v0"],
-        "alpha": [1.0, 5.0, 10.0],
-        "wrapper": ["external_force"],
-    },
-    {
-        "environment": ["PendulumSwingUp-v0"],
-        "alpha": [0.01, 0.05, 0.1, 0.15, 0.2],
-        "wrapper": ["noisy_action", "probabilistic_action", "adversarial_pendulum"],
-    },
-]
+experiments = get_experiments()
 
-for experiment in EXPERIMENT:
+for experiment in experiments:
     # MODEL-BASED + Hallucination + weak/strong
     commands = make_commands(
         f"{cwd}/{script}",
-        base_args={"seed": 0},
+        base_args={"agent": "ZeroSum"},
         common_hyper_args={
+            "seed": [0],  # , 1, 2, 3, 4
             "environment": experiment["environment"],
             "protagonist-name": ["BPTT"],
             "alpha": experiment["alpha"],
             "adversarial-wrapper": experiment["wrapper"],
             "hallucinate": [True],
             "strong-antagonist": [True, False],
-            "num-steps": [1, 4],
         },
     )
     runner.run_batch(commands)
+    time.sleep(2)
 
     # MODEL-BASED + Non-Hallucination.
     commands = make_commands(
         f"{cwd}/{script}",
-        base_args={"seed": [0]},
+        base_args={"agent": "ZeroSum"},
         common_hyper_args={
+            "seed": [0],  # , 1, 2, 3, 4
             "environment": experiment["environment"],
             "protagonist-name": ["BPTT"],
             "alpha": experiment["alpha"],
             "adversarial-wrapper": experiment["wrapper"],
             "hallucinate": [False],
             "strong-antagonist": [False],
-            "num-steps": [1],
         },
     )
     runner.run_batch(commands)
+    time.sleep(2)
