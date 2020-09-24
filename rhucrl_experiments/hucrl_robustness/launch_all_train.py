@@ -23,7 +23,7 @@ BASE_ARGS = {
     "eval-episodes": 10,
 }
 
-AGENTS = ["TD3", "MPO", "PPO", "VMPO"]
+AGENTS = ["TD3", "MPO", "PPO", "VMPO", "SAC"]
 commands = make_commands(
     f"{cwd}/{script}",
     base_args={**BASE_ARGS, "hallucinate": False},
@@ -50,12 +50,11 @@ commands += make_commands(
     base_args={**BASE_ARGS, "num-steps": 1},
     common_hyper_args={
         "seed": SEEDS,
-        "protagonist-name": ["Dyna", "MVE"],
+        "protagonist-name": ["MVE", "Dyna"],
         "environment": ENVIRONMENTS,
         "hallucinate": [True, False],
-        "base-agent-name": ["TD3", "MPO", "BPTT"],
+        "base-agent-name": ["BPTT", "TD3", "MPO", "SAC"],
     },
 )
 
-print(len(commands))
 runner.run(commands)

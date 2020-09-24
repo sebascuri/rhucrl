@@ -6,6 +6,8 @@ parser = get_command_line_parser()
 parser.set_defaults(
     environment="MBHalfCheetah-v0",
     agent="RARL",
+    protagonist_name="MVE",
+    base_agent_name="TD3",
     alpha=0,
     train_episodes=200,
     train_antagonist_episodes=0,

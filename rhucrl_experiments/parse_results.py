@@ -11,7 +11,7 @@ def get_name(h_params):
     """Get experiment name from hyper parameter json file."""
     protagonist_name = h_params.protagonist_name[0]
     if protagonist_name in ["MVE", "Dyna", "STEVE"]:
-        protagonist_name += f"-{h_params.base_agent[0]}"
+        protagonist_name += f"-{h_params.base_agent_name[0]}"
     if protagonist_name in ["MVE", "Dyna", "STEVE", "BPTT"]:
         protagonist_name += f"-{h_params.num_steps[0]}"
 
@@ -69,6 +69,7 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
     weak_antagonist_df = pd.DataFrame()
 
     for run in os.listdir(base_dir):
+        print(run)
         environment = run.split(" ")[0]
         run_dir = f"{base_dir}/{run}"
         agent_listdir = os.listdir(run_dir)
@@ -78,7 +79,10 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
         name_dict = get_name(hyper_params)
         name_dict.update(environment=environment)
 
-        joint_df_ = pd.read_json(f"{run_dir}/{STATISTICS}")
+        try:
+            joint_df_ = pd.read_json(f"{run_dir}/{STATISTICS}")
+        except ValueError:
+            continue
         extend_data_frame(joint_df_, name_dict)
 
         protagonist_df_ = get_player_data_frame(run_dir, player="Protagonist")
