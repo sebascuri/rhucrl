@@ -36,7 +36,7 @@ for experiment in EXPERIMENT:
     # MODEL-FREE
     commands = make_commands(
         f"{cwd}/{script}",
-        base_args={"agent": "RARL"},
+        base_args={"agent": "ZeroSum"},
         common_hyper_args={
             "seed": [0],  # , 1, 2, 3, 4
             "environment": experiment["environment"],
