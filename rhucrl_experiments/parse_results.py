@@ -69,7 +69,10 @@ def get_all_data_frames(base_dir="runs/RARLAgent/"):
     weak_antagonist_df = pd.DataFrame()
 
     for run in os.listdir(base_dir):
+        if run == ".DS_Store":
+            continue
         print(run)
+
         environment = run.split(" ")[0]
         run_dir = f"{base_dir}/{run}"
         agent_listdir = os.listdir(run_dir)

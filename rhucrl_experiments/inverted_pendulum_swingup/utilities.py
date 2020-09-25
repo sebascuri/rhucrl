@@ -49,10 +49,19 @@ class PendulumModel(AbstractModel):
             )
             u = (1 - self.alpha) * protagonist_action + self.alpha * antagonist_action
         elif self.wrapper == "probabilistic_action":
-            if np.random.rand() < self.alpha:
-                u = antagonist_action[..., 0].clamp(-self.max_torque, self.max_torque)
+            antagonist_action = antagonist_action[..., 0].clamp(
+                -self.max_torque, self.max_torque
+            )
+            if state.ndim == 1:
+                if np.random.rand() < self.alpha:
+                    u = antagonist_action
+                else:
+                    u = protagonist_action
             else:
-                u = protagonist_action
+                u = protagonist_action.clone()
+                idx = np.random.rand(state.shape[0]) < self.alpha
+                u[idx] = antagonist_action[idx].clone()
+
         elif self.wrapper == "adversarial_pendulum" and self.alpha > 0:
             u = torch.clamp(protagonist_action, -self.max_torque, self.max_torque)
             if "gravity" in self.force_body_names:
