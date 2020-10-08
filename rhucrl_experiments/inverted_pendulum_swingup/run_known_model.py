@@ -7,14 +7,14 @@ parser = get_command_line_parser()
 parser.set_defaults(
     environment="PendulumSwingUp-v0",
     agent="AdversarialMPC",
-    adversarial_wrapper="probabilistic_action",
-    alpha=0.2,
+    adversarial_wrapper="noisy_action",
+    alpha=0.1,
     force_body_names=["gravity", "mass"],
     horizon=40,
     train_episodes=0,
     train_antagonist_episodes=0,
     exploration_episodes=0,
-    eval_episodes=5,
+    eval_episodes=1,
     nominal_model=False,
 )
 args = parser.parse_args()

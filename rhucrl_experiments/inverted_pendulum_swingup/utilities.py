@@ -52,15 +52,10 @@ class PendulumModel(AbstractModel):
             antagonist_action = antagonist_action[..., 0].clamp(
                 -self.max_torque, self.max_torque
             )
-            if state.ndim == 1:
-                if np.random.rand() < self.alpha:
-                    u = antagonist_action
-                else:
-                    u = protagonist_action
+            if np.random.rand() < self.alpha:
+                u = antagonist_action
             else:
-                u = protagonist_action.clone()
-                idx = np.random.rand(state.shape[0]) < self.alpha
-                u[idx] = antagonist_action[idx].clone()
+                u = protagonist_action
 
         elif self.wrapper == "adversarial_pendulum" and self.alpha > 0:
             u = torch.clamp(protagonist_action, -self.max_torque, self.max_torque)
