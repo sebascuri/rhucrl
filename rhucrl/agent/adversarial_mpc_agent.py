@@ -4,7 +4,7 @@ from contextlib import nullcontext
 from rllib.agent import MPCAgent
 from rllib.algorithms.mpc import CEMShooting
 
-from rhucrl.algorithm.adversarial_mpc import adversarial_solver
+from rhucrl.algorithm.adversarial_mpc import AdversarialMPCShooting
 from rhucrl.environment.utilities import Hallucinate
 from rhucrl.utilities.util import get_default_models
 
@@ -75,7 +75,7 @@ class AdversarialMPCAgent(AdversarialAgent):
                 **kwargs,
             )
 
-            mpc_solver = adversarial_solver(
+            mpc_solver = AdversarialMPCShooting(
                 base_solver=base_solver,
                 protagonist_dim_action=environment.protagonist_dim_action,
                 antagonist_dim_action=environment.antagonist_dim_action,
