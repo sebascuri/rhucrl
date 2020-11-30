@@ -21,15 +21,6 @@ class AdversarialMPCShooting(nn.Module):  # type: ignore
         Dimensions of protagonist actions.
     antagonist_dim_action: Tuple[int].
         Dimension of antagonist actions.
-    strong_antagonist: bool, optional (default=True).
-        If True, it will optimize the antagonist actions while keeping the protagonist
-        fixed. i.e. \argmin_{u_antagonist} J_p(u_protagonist, u).
-        ..math u_{protagonist} = \arg \max_{u_p} \min{u_a} J_o(u_p, u_a).
-        ..math u_{antagonist} = \arg \min_u J_p(u_{protagonist}, u_a).
-
-        If False, it will return the antagonist actions found by the protagonist
-        training. i.e.
-        ..math u_{protagonist}, u_{antagonist} = \arg \max_{u_p} \min{u_a} J_o(u_p, u_a)
 
     nominal_model: bool, optional (default=False).
         If True, the protagonist will plan with the nominal model, ie alpha=0.
@@ -41,7 +32,6 @@ class AdversarialMPCShooting(nn.Module):  # type: ignore
         base_solver: MPCSolver,
         protagonist_dim_action: Tuple[int],
         antagonist_dim_action: Tuple[int],
-        strong_antagonist: bool,
         nominal_model: bool,
     ) -> None:
         super().__init__()
@@ -52,7 +42,6 @@ class AdversarialMPCShooting(nn.Module):  # type: ignore
             self.h_dim_action = base_solver.dynamical_model.dim_state
         else:
             self.h_dim_action = (0,)
-        self.strong_antagonist = strong_antagonist
         self.nominal_model = nominal_model
 
         self.dim_action = (
@@ -102,10 +91,6 @@ class AdversarialMPCShooting(nn.Module):  # type: ignore
 
             self.update_sequence_generation(elite_actions)
 
-        if not self.strong_antagonist:  # Early stop weak antagonists.
-            if self.clamp:
-                return self.mean.clamp(-1.0, 1.0)
-            return self.mean
         p_action = repeat_along_dimension(
             self.mean[..., : self.p_dim_action[0]], number=self.num_samples, dim=-2
         )

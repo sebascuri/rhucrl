@@ -1,6 +1,8 @@
 """Python Script Template."""
 from abc import ABCMeta
+from copy import deepcopy
 
+import numpy as np
 from rllib.agent import AbstractAgent
 from rllib.util.logger import Logger
 
@@ -14,8 +16,7 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     Strong-Antagonist optimizes
         \min_{\pi_a} J(\pi_p.detach(), \pi_a)
 
-    In most cases Weak-Antagonist=Strong-Antagonist, except in RH-UCRL. In RH-UCRL
-
+    In RH-UCRL
      Protagonist/Weak-Antagonist optimizes
         \max_{\pi_p} \min_{\pi_a} \max_{\pi_h} J(\pi_p, \pi_a, \pi_h)
 
@@ -26,69 +27,77 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
     def __init__(
         self,
         protagonist_agent,
-        antagonist_agent=None,
-        weak_antagonist_agent=None,
-        tensorboard=False,
-        alpha=0.1,
+        antagonist_agent,
+        n_protagonists=1,
+        n_antagonists=1,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.agents = {}
-        self.antagonist_agents = {}
-        for role, agent in zip(
-            ["Protagonist", "Antagonist", "WeakAntagonist"],
-            [protagonist_agent, antagonist_agent, weak_antagonist_agent],
+        self.protagonists = [deepcopy(protagonist_agent) for _ in range(n_protagonists)]
+        self.antagonists = [deepcopy(antagonist_agent) for _ in range(n_antagonists)]
+
+        self.agents = self.protagonists + self.antagonists
+
+        for role, agent_list in zip(
+            ["Protagonist", "Antagonist"], [self.protagonists, self.antagonists]
         ):
-            if agent is not None:
-                self.agents.update({role: agent})
+            for i, agent in enumerate(agent_list):
                 agent.logger.delete_directory()
                 agent.logger = Logger(
-                    f"{self.logger.log_dir[5:]}/{role}-{agent.name}",
-                    tensorboard=tensorboard,
+                    f"{self.logger.log_dir[5:]}/{role}-{i}-{agent.name}",
+                    tensorboard=False,
                 )
-                if "Antagonist" in role:
-                    self.antagonist_agents.update({role: agent})
 
-        if alpha == 0:  # No opponents.
-            self.antagonist_agents = {}
-            self.agents.pop("Antagonist", None)
-            self.agents.pop("WeakAntagonist", None)
+        self.protagonist_idx = 0
+        self.antagonist_idx = 0
+
+    @property
+    def protagonist(self):
+        """Get current protagonist."""
+        return self.protagonists[self.protagonist_idx]
+
+    @property
+    def antagonist(self):
+        """Get current antagonist."""
+        return self.antagonists[self.antagonist_idx]
 
     def send_observations(self, protagonist_observation, antagonist_observation):
         """Send the observations to each player."""
-        self.agents["Protagonist"].observe(protagonist_observation)
-        for agent in self.antagonist_agents.values():
-            agent.observe(antagonist_observation)
+        self.protagonist.observe(protagonist_observation)
+        self.antagonist.observe(antagonist_observation)
 
     def __str__(self):
         """Generate string to parse the agent."""
         str_ = super().__str__()
-        for agent in self.agents.values():
+        for agent in self.agents:
             str_ += str(agent)
         return str_
 
     def start_episode(self):
         """Start episode of both players."""
         super().start_episode()
-        for agent in self.agents.values():
-            agent.start_episode()
+        self.protagonist_idx = np.random.choice(len(self.protagonists))
+        self.antagonist_idx = np.random.choice(len(self.antagonists))
+
+        self.protagonist.start_episode()
+        self.antagonist.start_episode()
 
     def end_episode(self):
         """End episode of both players."""
-        for agent in self.agents.values():
-            agent.end_episode()
+        self.protagonist.end_episode()
+        self.antagonist.end_episode()
         super().end_episode()
 
     def end_interaction(self):
         """End interaction of both players."""
-        for agent in self.agents.values():
-            agent.end_interaction()
+        self.protagonist.end_interaction()
+        self.antagonist.end_interaction()
         super().end_interaction()
 
     def set_goal(self, goal):
         """Set the goal to both players."""
-        for agent in self.agents.values():
+        for agent in self.agents:
             agent.set_goal(goal)
 
     def train(self, val=True):
@@ -96,8 +105,8 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
         In eval mode, both the protagonist and the antagonist learn.
         """
-        for agent in self.agents.values():
-            agent.train(val)
+        self.protagonist.train(val=val)
+        self.antagonist.train(val=val)
         super().train(val)
 
     def eval(self, val=True):
@@ -105,8 +114,8 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
         In eval mode, both the protagonist and the antagonist do not learn.
         """
-        for agent in self.agents.values():
-            agent.eval(val)
+        self.protagonist.eval(val=val)
+        self.antagonist.eval(val=val)
         super().eval(val)
 
     def train_only_antagonist(self):
@@ -115,11 +124,8 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         In this training mode, the protagonist is kept fixed, and the antagonist learns
         to hinder the protagonist.
         """
-        for role, agent in self.agents.items():
-            if role == "Protagonist":
-                agent.eval()
-            else:
-                agent.train()
+        self.protagonist.eval()
+        self.antagonist.train()
 
     def train_only_protagonist(self):
         """Set into train protagonist mode.
@@ -127,11 +133,8 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
         In this training mode, the antagonist is kept fixed, and the protagonist learns
         to hinder the antagonist.
         """
-        for role, agent in self.agents.items():
-            if role == "Protagonist":
-                agent.train()
-            else:
-                agent.eval()
+        self.protagonist.train()
+        self.antagonist.eval()
 
     def only_protagonist(self, val=True):
         """Evaluate the protagonist using only the protagonist policy."""
@@ -139,22 +142,16 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
 
     def save(self, filename, directory=None):
         """Save both agents."""
-        for role, agent in self.agents.items():
-            agent.save(role + filename, directory=directory)
+        for role, agent_list in zip(
+            ["Protagonist", "Antagonist"], [self.protagonists, self.antagonists]
+        ):
+            for i, agent in enumerate(agent_list):
+                agent.save(f"{role}-{i}-{filename}", directory=directory)
 
-    def load_protagonist(self, path):
+    def load_protagonist(self, path, idx=0):
         """Load protagonist agent from path."""
-        self.agents["Protagonist"].load(path)
+        self.protagonists[idx].load(path)
 
-    def load_antagonist(self, path):
+    def load_antagonist(self, path, idx=0):
         """Load antagonist agent from path."""
-        self.agents["Antagonist"].load(path)
-
-    def load_weak_antagonist(self, path):
-        """Load weak antagonist agent from path."""
-        self.agents["WeakAntagonist"].load(path)
-
-    @classmethod
-    def default(cls, environment, *args, **kwargs):
-        """Get default agent."""
-        return super().default(environment, *args, **kwargs)
+        self.antagonists[idx].load(path)

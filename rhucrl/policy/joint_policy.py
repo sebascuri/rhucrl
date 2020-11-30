@@ -1,13 +1,5 @@
 """Python Script Template."""
 
-import torch
-from rllib.policy import NNPolicy
-
-from rhucrl.environment.utilities import (
-    adversarial_to_antagonist_environment,
-    adversarial_to_protagonist_environment,
-)
-
 from .adversarial_policy import AdversarialPolicy
 
 
@@ -67,45 +59,16 @@ class JointPolicy(AdversarialPolicy):
         p_std = p_scale_tril.diagonal(dim1=-1, dim2=-2)
         a_std = a_scale_tril.diagonal(dim1=-1, dim2=-2)
 
-        if self.protagonist or self.weak_antagonist:
+        if self.protagonist:
             h_mean = p_mean[..., p_dim:]
             h_std = p_std[..., p_dim:]
-        elif self.strong_antagonist:
+        elif self.antagonist:
             h_mean = a_mean[..., a_dim:]
             h_std = a_std[..., a_dim:]
         else:
             raise NotImplementedError
 
-        pro_mean, pro_std = p_mean[..., :p_dim], p_std[..., :p_dim]
-        ant_mean, ant_std = a_mean[..., :a_dim], a_std[..., :a_dim]
+        p_mean, p_std = p_mean[..., :p_dim], p_std[..., :p_dim]
+        a_mean, a_std = a_mean[..., :a_dim], a_std[..., :a_dim]
 
-        mean = torch.cat((pro_mean, ant_mean, h_mean), dim=-1)
-        std = torch.cat((pro_std, ant_std, h_std), dim=-1)
-        return mean, std.diag_embed()
-
-    @classmethod
-    def default(
-        cls,
-        environment,
-        protagonist=True,
-        weak_antagonist=False,
-        strong_antagonist=False,
-        *args,
-        **kwargs,
-    ):
-        """Get default policy."""
-        protagonist_env = adversarial_to_protagonist_environment(environment)
-        protagonist_policy = NNPolicy.default(protagonist_env, *args, **kwargs)
-
-        antagonist_env = adversarial_to_antagonist_environment(environment)
-        antagonist_policy = NNPolicy.default(antagonist_env, *args, **kwargs)
-
-        return cls(
-            dim_action=environment.dim_action,
-            action_scale=environment.action_scale,
-            protagonist_policy=protagonist_policy,
-            antagonist_policy=antagonist_policy,
-            protagonist=protagonist,
-            weak_antagonist=weak_antagonist,
-            strong_antagonist=strong_antagonist,
-        )
+        return self.stack_policies((p_mean, a_mean, h_mean), (p_std, a_std, h_std))

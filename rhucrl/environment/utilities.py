@@ -37,17 +37,13 @@ def adversarial_to_protagonist_environment(environment):
     return protagonist_environment
 
 
-def adversarial_to_antagonist_environment(environment, strong_antagonist=True):
+def adversarial_to_antagonist_environment(environment):
     """Get the environment as seen by the antagonist."""
     antagonist_environment = AdversarialEnv(environment.env_name)
     protagonist_dim_action = environment.protagonist_dim_action[0]
+    dim_action = environment.antagonist_dim_action[0]
 
-    if strong_antagonist:
-        dim_action = environment.antagonist_dim_action[0] + environment.dim_state[0]
-    else:
-        dim_action = environment.antagonist_dim_action[0]
-
-    antagonist_environment.action_space = Box(
+    action_space = Box(
         environment.action_space.low[
             protagonist_dim_action : protagonist_dim_action + dim_action
         ],
@@ -55,6 +51,9 @@ def adversarial_to_antagonist_environment(environment, strong_antagonist=True):
             protagonist_dim_action : protagonist_dim_action + dim_action
         ],
     )
+    antagonist_environment.action_space = action_space
+    antagonist_environment.env.action_space = action_space
+
     antagonist_environment.dim_action = (dim_action,)
     return antagonist_environment
 

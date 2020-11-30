@@ -7,23 +7,12 @@ from rhucrl.environment.adversarial_environment import AdversarialEnv
 
 from .adversarial_policy import AdversarialPolicy
 
-T = TypeVar("T", bound="SplitPolicy")
-
 class SplitPolicy(AdversarialPolicy):
     """Split a policy into protagonist and antagonist policies."""
 
-    base_policy: AbstractPolicy
-    def __init__(
-        self, base_policy: AbstractPolicy, *args: Any, **kwargs: Any,
-    ) -> None: ...
-    @classmethod
-    def default(
-        cls: Type[T],
-        environment: AdversarialEnv,
-        base_policy: Optional[AbstractPolicy] = None,
-        protagonist: bool = True,
-        weak_antagonist: bool = False,
-        strong_antagonist: bool = False,
-        *args: Any,
-        **kwargs: Any,
-    ) -> T: ...
+    _hallucinate_protagonist: bool
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    @property
+    def hallucinate_protagonist(self) -> bool: ...
+    @property
+    def hallucinate_antagonist(self) -> bool: ...

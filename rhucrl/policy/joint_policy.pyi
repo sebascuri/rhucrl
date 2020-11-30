@@ -29,8 +29,7 @@ class JointPolicy(AdversarialPolicy):
         cls: Type[T],
         environment: AdversarialEnv,
         protagonist: bool = ...,
-        weak_antagonist: bool = ...,
-        strong_antagonist: bool = ...,
+        antagonist: bool = ...,
         *args: Any,
         **kwargs: Any,
     ) -> T: ...

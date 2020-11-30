@@ -8,7 +8,6 @@ class AdversarialEnv(GymEnvironment):
     """Class that wraps an adversarial environment."""
 
     action_space: Box
-    def pop_wrapper(self) -> None: ...
     @property
     def protagonist_dim_action(self) -> Tuple[int]: ...
     @property
