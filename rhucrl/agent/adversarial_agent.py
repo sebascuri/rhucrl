@@ -43,11 +43,14 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
             ["Protagonist", "Antagonist"], [self.protagonists, self.antagonists]
         ):
             for i, agent in enumerate(agent_list):
-                agent.logger.delete_directory()
-                agent.logger = Logger(
-                    f"{self.logger.log_dir[5:]}/{role}-{i}-{agent.name}",
-                    tensorboard=False,
-                )
+                try:
+                    agent.logger.delete_directory()
+                    agent.logger = Logger(
+                        f"{self.logger.log_dir[5:]}/{role}-{i}-{agent.name}",
+                        tensorboard=False,
+                    )
+                except (FileNotFoundError, AttributeError):
+                    pass
 
         self.protagonist_idx = 0
         self.antagonist_idx = 0

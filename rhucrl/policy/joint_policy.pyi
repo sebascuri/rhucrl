@@ -13,8 +13,6 @@ T = TypeVar("T", bound="JointPolicy")
 class JointPolicy(AdversarialPolicy):
     """Given a protagonist and an antagonist policy, combine to give a joint policy."""
 
-    protagonist_policy: AbstractPolicy
-    antagonist_policy: AbstractPolicy
     def __init__(
         self,
         dim_action: Tuple[int],

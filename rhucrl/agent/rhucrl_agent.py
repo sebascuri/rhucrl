@@ -28,7 +28,9 @@ class RHUCRLAgent(ModelBasedAgent):
         else:
             pessimistic_policy.hallucinate_antagonist = True
         pessimistic_policy.antagonist = True
-        pessimistic_policy.protagonist_policy = self.algorithm.policy.protagonist_policy
+        pessimistic_policy.set_protagonist_policy(
+            self.algorithm.policy.protagonist_policy
+        )
         self.antagonist_algorithm.set_policy(new_policy=pessimistic_policy)
         self.policy = self.antagonist_algorithm.policy
 
@@ -77,7 +79,7 @@ class RHUCRLAgent(ModelBasedAgent):
         # Learn Protagonist.
         super().learn()
         # Set protagonist policy parameters.
-        self.antagonist_algorithm.set_protagonist_policy(
+        self.antagonist_algorithm.policy.set_protagonist_policy(
             self.algorithm.policy.protagonist_policy
         )
         # Learn Antagonist.
@@ -105,9 +107,7 @@ class RHUCRLAgent(ModelBasedAgent):
         self._learn_steps(closure)
 
     @classmethod
-    def default(
-        cls, environment, base_agent_name="MVE", best_response=False, *args, **kwargs
-    ):
+    def default(cls, environment, base_agent_name="MVE", *args, **kwargs):
         """See `AbstractAgent.default' method."""
         policy = SplitPolicy.default(
             environment, hallucinate_protagonist=True, *args, **kwargs
@@ -117,9 +117,12 @@ class RHUCRLAgent(ModelBasedAgent):
             environment, policy=policy, *args, **kwargs
         )
         return super().default(
-            environment=environment,
-            base_agent=base_agent,
-            best_response=best_response,
-            *args,
-            **kwargs,
+            environment=environment, base_agent=base_agent, *args, **kwargs
         )
+
+
+class BestResponseAgent(RHUCRLAgent):
+    """Best Response Agent."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(best_response=True, *args, **kwargs)

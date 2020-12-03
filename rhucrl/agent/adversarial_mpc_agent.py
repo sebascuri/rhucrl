@@ -16,7 +16,7 @@ class AdversarialMPCAgent(AdversarialAgent):
 
     def __init__(self, mpc_solver, *args, **kwargs):
         protagonist = MPCAgent(mpc_solver, *args, **kwargs)
-        super().__init__(protagonist, *args, **kwargs)
+        super().__init__(protagonist, antagonist_agent=None, *args, **kwargs)
         self.policy = protagonist.policy
         self.policy.dim_action = (
             mpc_solver.p_dim_action[0]
@@ -79,7 +79,6 @@ class AdversarialMPCAgent(AdversarialAgent):
                 base_solver=base_solver,
                 protagonist_dim_action=environment.protagonist_dim_action,
                 antagonist_dim_action=environment.antagonist_dim_action,
-                strong_antagonist=strong_antagonist,
                 nominal_model=nominal_model,
             )
             return super().default(environment, mpc_solver=mpc_solver, *args, **kwargs)
