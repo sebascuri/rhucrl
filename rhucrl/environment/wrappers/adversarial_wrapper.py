@@ -51,10 +51,10 @@ class AdversarialWrapper(Wrapper, metaclass=ABCMeta):
         else:
             self.action_space = Box(
                 low=np.concatenate(
-                    (self.env.unwrapped.action_space.low, alpha * self.antagonist_low)
+                    (self.env.unwrapped.action_space.low, self.antagonist_low)
                 ),
                 high=np.concatenate(
-                    (self.env.unwrapped.action_space.high, alpha * self.antagonist_high)
+                    (self.env.unwrapped.action_space.high, self.antagonist_high)
                 ),
                 shape=(self.protagonist_dim_action[0] + self.antagonist_dim_action[0],),
                 dtype=np.float32,

@@ -40,8 +40,8 @@ class NoisyActionRobustWrapper(AdversarialWrapper):
             raise TypeError("Only continuous actions allowed.")
         super().__init__(
             env,
-            antagonist_low=env.action_space.low * (0 if alpha == 0 else 1 / alpha),
-            antagonist_high=env.action_space.high * (0 if alpha == 0 else 1 / alpha),
+            antagonist_low=env.action_space.low,
+            antagonist_high=env.action_space.high,
             alpha=alpha,
         )
 

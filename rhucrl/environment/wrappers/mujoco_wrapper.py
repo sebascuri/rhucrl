@@ -41,7 +41,7 @@ class MujocoAdversarialWrapper(AdversarialWrapper):
         )
 
     def _antagonist_action_to_xfrc(self, antagonist_action):
-        aa = antagonist_action
+        aa = self.alpha * antagonist_action
         for i, body_index in enumerate(self.force_body_names.values()):
             self.sim.data.xfrc_applied[body_index] = np.array(
                 [aa[i * 2], 0.0, aa[i * 2 + 1], 0.0, 0.0, 0.0]

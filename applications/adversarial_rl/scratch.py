@@ -14,8 +14,8 @@ from rhucrl.environment.wrappers import MujocoAdversarialWrapper
 alpha = 10.0
 hallucinate = False
 name = "MBHalfCheetah-v0"
-agent_name = "RHUCRL"
-base_agent_name = "MVE"
+agent_name = "RARL"
+base_agent_name = "SAC"
 beta = 1.0
 seed = 0
 num_episodes = 30
@@ -51,7 +51,7 @@ train_agent(
     print_frequency=1,
 )
 
-if agent not in ADVERSARIAL_AGENTS:
+if agent_name not in ADVERSARIAL_AGENTS:
     environment.add_wrapper(
         MujocoAdversarialWrapper, alpha=alpha, force_body_names=force_body_names
     )
