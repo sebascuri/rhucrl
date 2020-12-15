@@ -1,0 +1,5 @@
+base_agent_name: DataAugmentation
+num_steps: 1
+num_samples: 1
+num_iter: 2
+train_frequency: 1

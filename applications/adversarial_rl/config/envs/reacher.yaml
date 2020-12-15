@@ -1,0 +1,4 @@
+name: MBReacher2d-v0
+num_episodes: 20
+max_steps: 1000
+force_body_names: ["body1"]

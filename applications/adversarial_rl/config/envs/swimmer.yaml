@@ -1,0 +1,4 @@
+name: MBSwimmer-v0
+num_episodes: 200
+max_steps: 1000
+force_body_names: ["torso"]

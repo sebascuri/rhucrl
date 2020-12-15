@@ -1,0 +1,21 @@
+Environments (6)
+half-cheetah
+hopper
+inverted-pendulum
+reacher
+swimmer
+walker
+
+Alpha (4)
+1, 2, 5, 10
+
+algorithms (8):
+PPO
+SAC
+H-UCRL (SAC + DA)
+RARL (PPO)
+H-RARL (SAC + DA)
+MaxiMin (SAC)
+BR (SAC + DA)
+RH-UCRL (SAC + DA)
+
