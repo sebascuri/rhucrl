@@ -3,11 +3,11 @@ import os
 from lsf_runner import init_runner, make_commands
 
 
-runner = init_runner("Adversarial RL", wall_time=24 * 60, num_threads=2)
+runner = init_runner("AdversarialRL", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run.py"
 
-SEEDS = range(3)
+SEEDS = [0]
 ALPHAS = [1.0, 2.0, 5.0, 10.0]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
