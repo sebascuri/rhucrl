@@ -1,3 +1,4 @@
 base_agent_name: SAC
 num_iter: 1
 train_frequency: 1
+exploration_episodes: 10 
