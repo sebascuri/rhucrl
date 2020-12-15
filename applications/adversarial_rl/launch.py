@@ -40,8 +40,4 @@ for agent_name, agent_configs in AGENTS.items():
             },
         )
 
-for cmd in commands:
-    print(cmd)
-print(len(commands))
-
-print(commands[150])
+runner.run(commands)
