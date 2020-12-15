@@ -25,7 +25,7 @@ class RARLAgent(AdversarialAgent):
 
     policy: JointPolicy
 
-    def __init__(self, dim_action, action_scale, hallucinate=False, *args, **kwargs):
+    def __init__(self, dim_action, action_scale, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.policy = JointPolicy(
             dim_state=self.protagonist.policy.dim_state,
@@ -34,7 +34,6 @@ class RARLAgent(AdversarialAgent):
             protagonist_policy=self.protagonist.policy,
             antagonist_policy=self.antagonist.policy,
         )
-        self.hallucinate = hallucinate
 
     def observe(self, observation):
         """Send observations to both agents.
@@ -50,13 +49,8 @@ class RARLAgent(AdversarialAgent):
             self.antagonist.policy(p_observation.state)
         ).sample()
 
-        if self.hallucinate:
-            h_dim = self.policy.dim_state[0]
-        else:
-            h_dim = 0
-
-        p_dim = self.policy.protagonist_policy.dim_action[0] - h_dim
-        a_dim = self.policy.protagonist_policy.dim_action[0] - h_dim
+        p_dim = self.policy.protagonist_policy.dim_action[0]
+        a_dim = self.policy.antagonist_policy.dim_action[0]
 
         p_observation.action = torch.cat(
             (observation.action[:p_dim], observation.action[p_dim + a_dim :]), -1
@@ -87,6 +81,23 @@ class RARLAgent(AdversarialAgent):
         super().load_antagonist(path, idx)
         self.policy.set_antagonist_policy(self.antagonist.policy)
 
+    @staticmethod
+    def _init_agent(
+        environment, agent_class_, hallucinate, dynamical_model=None, *args, **kwargs
+    ):
+        if dynamical_model is not None:
+            dynamical_model = type(dynamical_model).default(environment)
+
+        if hallucinate:
+            policy = AugmentedPolicy.default(environment, *args, **kwargs)
+            environment.add_wrapper(HallucinationWrapper)
+        else:
+            policy = NNPolicy.default(environment, *args, **kwargs)
+
+        return agent_class_.default(
+            environment, policy=policy, dynamical_model=dynamical_model, *args, **kwargs
+        )
+
     @classmethod
     def default(
         cls,
@@ -94,6 +105,7 @@ class RARLAgent(AdversarialAgent):
         base_agent_name="PPO",
         hallucinate_protagonist=False,
         hallucinate_antagonist=False,
+        dynamical_model=None,
         *args,
         **kwargs,
     ):
@@ -102,20 +114,21 @@ class RARLAgent(AdversarialAgent):
         agent_ = getattr(agent_module, f"{base_agent_name}Agent")
 
         p_env = adversarial_to_protagonist_environment(environment=environment)
-        if hallucinate_protagonist:
-            policy = AugmentedPolicy.default(p_env, *args, **kwargs)
-            p_env.add_wrapper(HallucinationWrapper)
-        else:
-            policy = NNPolicy.default(p_env, *args, **kwargs)
-        p_agent = agent_.default(p_env, policy=policy, *args, **kwargs)
-
+        p_agent = RARLAgent._init_agent(
+            environment=p_env,
+            agent_class_=agent_,
+            hallucinate=hallucinate_protagonist,
+            *args,
+            **kwargs,
+        )
         a_env = adversarial_to_antagonist_environment(environment=environment)
-        if hallucinate_antagonist:
-            policy = AugmentedPolicy.default(a_env, *args, **kwargs)
-            a_env.add_wrapper(HallucinationWrapper)
-        else:
-            policy = NNPolicy.default(a_env, *args, **kwargs)
-        a_agent = agent_.default(a_env, policy=policy, *args, **kwargs)
+        a_agent = RARLAgent._init_agent(
+            environment=a_env,
+            agent_class_=agent_,
+            hallucinate=hallucinate_antagonist,
+            *args,
+            **kwargs,
+        )
 
         return super().default(
             environment,
@@ -123,7 +136,6 @@ class RARLAgent(AdversarialAgent):
             action_scale=environment.action_scale,
             protagonist_agent=p_agent,
             antagonist_agent=a_agent,
-            hallucinate=hallucinate_protagonist or hallucinate_antagonist,
             *args,
             **kwargs,
         )

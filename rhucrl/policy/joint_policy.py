@@ -13,8 +13,8 @@ class JointPolicy(AdversarialPolicy):
 
     def forward(self, state):
         """Forward compute the policy."""
-        p_dim = self.dim_action[0] - self.protagonist_policy.dim_action[0]
-        a_dim = self.dim_action[0] - self.protagonist_policy.dim_action[0]
+        p_dim = self.antagonist_policy.dim_action[0]
+        a_dim = self.protagonist_policy.dim_action[0]
 
         p_mean, p_scale_tril = self.protagonist_policy(state)
         a_mean, a_scale_tril = self.antagonist_policy(state)
@@ -31,7 +31,7 @@ class JointPolicy(AdversarialPolicy):
         else:
             raise NotImplementedError
         if p_dim + a_dim < self.dim_action[0]:
-            h_mean, h_scale_tril = self.hallucination_pollicy()
+            h_mean, h_scale_tril = self.hallucination_policy(state)
             h_std = h_scale_tril.diagonal(dim1=-1, dim2=-2)
 
         p_mean, p_std = p_mean[..., :p_dim], p_std[..., :p_dim]

@@ -1,6 +1,7 @@
 """Python Script Template."""
 from abc import ABCMeta
 from copy import deepcopy
+import time
 
 import numpy as np
 from rllib.agent import AbstractAgent
@@ -43,14 +44,15 @@ class AdversarialAgent(AbstractAgent, metaclass=ABCMeta):
             ["Protagonist", "Antagonist"], [self.protagonists, self.antagonists]
         ):
             for i, agent in enumerate(agent_list):
+                time.sleep(0.1)
                 try:
                     agent.logger.delete_directory()
-                    agent.logger = Logger(
-                        f"{self.logger.log_dir[5:]}/{role}-{i}-{agent.name}",
-                        tensorboard=False,
-                    )
                 except (FileNotFoundError, AttributeError):
                     pass
+                agent.logger = Logger(
+                    f"{self.logger.log_dir[5:]}/{role}-{i}-{agent.name}",
+                    tensorboard=False,
+                )
 
         self.protagonist_idx = 0
         self.antagonist_idx = 0

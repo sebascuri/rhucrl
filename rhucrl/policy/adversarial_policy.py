@@ -48,7 +48,13 @@ class AdversarialPolicy(AbstractPolicy, metaclass=ABCMeta):
     def set_protagonist_policy(self, new_policy):
         """Set protagonist policy."""
         if isinstance(self._protagonist_policy, AugmentedPolicy):
-            self._protagonist_policy.true_policy = new_policy
+            if isinstance(new_policy, AugmentedPolicy):
+                self._protagonist_policy.true_policy = new_policy.true_policy
+                self._protagonist_policy.hallucination_policy = (
+                    new_policy.hallucination_policy
+                )
+            else:
+                self._protagonist_policy.true_policy = new_policy
         else:
             self._protagonist_policy = new_policy
 
@@ -63,7 +69,13 @@ class AdversarialPolicy(AbstractPolicy, metaclass=ABCMeta):
     def set_antagonist_policy(self, new_policy):
         """Set antagonist policy."""
         if isinstance(self._antagonist_policy, AugmentedPolicy):
-            self._antagonist_policy.true_policy = new_policy
+            if isinstance(new_policy, AugmentedPolicy):
+                self._antagonist_policy.true_policy = new_policy.true_policy
+                self._antagonist_policy.hallucination_policy = (
+                    new_policy.hallucination_policy
+                )
+            else:
+                self._antagonist_policy.true_policy = new_policy
         else:
             self._antagonist_policy = new_policy
 
