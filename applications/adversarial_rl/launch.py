@@ -25,12 +25,12 @@ AGENTS = {
 }
 
 commands = []
-for agent_name, agent_configs in AGENTS.items():
+for agent, agent_configs in AGENTS.items():
     for agent_config in agent_configs:
         commands += make_commands(
             script,
             base_args={
-                "agent_name": agent_name,
+                "agent": agent,
                 "agent_config": f"config/agents/{agent_config}.yaml",
                 "hallucinate": "hucrl" in agent_config,
             },
