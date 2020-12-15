@@ -31,12 +31,12 @@ for agent, agent_configs in AGENTS.items():
             script,
             base_args={
                 "agent": agent,
-                "agent_config": f"config/agents/{agent_config}.yaml",
+                "agent-config": f"config/agents/{agent_config}.yaml",
                 "hallucinate": "hucrl" in agent_config,
             },
             common_hyper_args={
                 "seed": SEEDS,
-                "env_config": ENVS,
+                "env-config": ENVS,
             },
         )
 
