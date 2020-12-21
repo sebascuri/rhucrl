@@ -14,6 +14,7 @@ from rllib.policy.constant_policy import ConstantPolicy
 
 from applications.util import get_agent, parse_config_file
 from rhucrl.agent import AGENTS as ADVERSARIAL_AGENTS
+from rhucrl.agent import DR_AGENTS
 from rhucrl.utilities.utilities import evaluate_domain_shift
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import MujocoDomainRandomizationWrapper
@@ -51,13 +52,13 @@ torch.set_num_threads(args.num_threads)
 
 # Define environment
 environment = AdversarialEnv(env_args["name"], seed=args.seed)
-if args.agent in ADVERSARIAL_AGENTS and args.agent != "EPOPT":
+if args.agent in ADVERSARIAL_AGENTS:
     environment.add_wrapper(
         MujocoDomainRandomizationWrapper,
         mass_names=env_args.get("mass_names", None),
         friction_names=env_args.get("friction_names", None),
     )
-if args.agent in ["RHUCRL", "BestResponse", "HRARL"] or agent_args.get("beta", 0.0) > 0:
+if args.agent in ["RHUCRL", "BestResponse"] or agent_args.get("beta", 0.0) > 0:
     dynamical_model = HallucinatedModel.default(
         environment, beta=agent_args.get("beta", 1.0)
     )
@@ -82,7 +83,7 @@ agent = get_agent(
     **agent_args,
 )
 
-if args.agent == "EPOPT":
+if args.agent in DR_AGENTS:
     environment.add_wrapper(
         MujocoDomainRandomizationWrapper,
         mass_names=env_args.get("mass_names", None),

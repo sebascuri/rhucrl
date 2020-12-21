@@ -66,9 +66,7 @@ environment = AdversarialEnv(env_args["name"], seed=args.seed)
 if args.agent in ADVERSARIAL_AGENTS:
     environment.add_wrapper(wrapper, alpha=args.alpha)
 
-if args.agent in ["RHUCRL", "BestResponse", "HRARL"] or agent_args.get(
-    "hallucinate", False
-):
+if args.agent in ["RHUCRL", "BestResponse"] or agent_args.get("beta", 0.0) > 0.0:
     dynamical_model = HallucinatedModel.default(
         environment, beta=agent_args.get("beta", 1.0)
     )

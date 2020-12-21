@@ -52,8 +52,9 @@ if args.agent in ADVERSARIAL_AGENTS:
         alpha=args.alpha,
         force_body_names=env_args["force_body_names"],
     )
-if args.agent in ["RHUCRL", "BestResponse", "HRARL"] or agent_args.get(
-    "hallucinate", False
+if (
+    args.agent in ["RHUCRL", "BestResponse", "HRARL"]
+    or agent_args.get("beta", 0.0) > 0.0
 ):
     dynamical_model = HallucinatedModel.default(
         environment, beta=agent_args.get("beta", 1.0)
