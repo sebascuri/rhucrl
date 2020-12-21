@@ -1,2 +1,3 @@
 base_agent_name: PPO
 num_episodes: 1000
+alpha: 1.0

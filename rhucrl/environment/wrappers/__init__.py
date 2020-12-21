@@ -9,6 +9,7 @@ from .reset_wrapper import ResetWrapper
 from .reward_wrapper import RewardWrapper
 
 try:
-    from .mujoco_wrapper import MujocoAdversarialWrapper
+    from .mujoco_adversarial_wrapper import MujocoAdversarialWrapper
+    from .mujoco_dr_wrapper import MujocoDomainRandomizationWrapper
 except ImportError:
     pass

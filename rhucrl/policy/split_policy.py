@@ -56,19 +56,31 @@ class SplitPolicy(AdversarialPolicy):
         return self.stack_policies((p_mean, a_mean, h_mean), (p_std, a_std, h_std))
 
     @classmethod
-    def default(cls, environment, hallucinate_protagonist=True, *args, **kwargs):
+    def default(
+        cls,
+        environment,
+        hallucinate_protagonist=True,
+        protagonist_policy=None,
+        antagonist_policy=None,
+        hallucination_policy=None,
+        *args,
+        **kwargs
+    ):
         """See `NNPolicy.default'."""
-        protagonist_policy = NNPolicy(
-            dim_state=environment.dim_state,
-            dim_action=environment.protagonist_dim_action,
-        )
-        antagonist_policy = NNPolicy(
-            dim_state=environment.dim_state,
-            dim_action=environment.antagonist_dim_action,
-        )
-        hallucination_policy = NNPolicy(
-            dim_state=environment.dim_state, dim_action=environment.dim_state
-        )
+        if protagonist_policy is None:
+            protagonist_policy = NNPolicy(
+                dim_state=environment.dim_state,
+                dim_action=environment.protagonist_dim_action,
+            )
+        if antagonist_policy is None:
+            antagonist_policy = NNPolicy(
+                dim_state=environment.dim_state,
+                dim_action=environment.antagonist_dim_action,
+            )
+        if hallucination_policy is None:
+            hallucination_policy = NNPolicy(
+                dim_state=environment.dim_state, dim_action=environment.dim_state
+            )
         return cls(
             dim_state=environment.dim_state,
             dim_action=environment.dim_action,

@@ -1,7 +1,8 @@
-base_agent_name: MVE
+base_agent_name: BPTT
 num_steps: 1
 num_samples: 1
 num_iter: 2
 train_frequency: 1
 num_episodes: 200
 exploration_episodes: 10
+beta: 0.1

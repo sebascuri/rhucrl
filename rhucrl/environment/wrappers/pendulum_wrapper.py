@@ -2,7 +2,7 @@
 import numpy as np
 
 from .adversarial_wrapper import AdversarialWrapper
-from .mujoco_wrapper import MujocoAdversarialWrapper
+from .mujoco_adversarial_wrapper import MujocoAdversarialWrapper
 
 
 class AdversarialPendulumWrapper(MujocoAdversarialWrapper):

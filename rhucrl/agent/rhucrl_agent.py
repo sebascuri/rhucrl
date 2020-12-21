@@ -34,15 +34,15 @@ class RHUCRLAgent(ModelBasedAgent):
         self.antagonist_algorithm.set_policy(new_policy=pessimistic_policy)
         self.policy = self.antagonist_algorithm.policy
 
-        for algorithm in [self.algorithm, self.antagonist_algorithm]:
-            assert self.dynamical_model is algorithm.base_algorithm.dynamical_model
-            assert self.reward_model is algorithm.base_algorithm.reward_model
-            assert self.termination_model is algorithm.base_algorithm.termination_model
+        # for algorithm in [self.algorithm, self.antagonist_algorithm]:
+        #     assert self.dynamical_model is algorithm.base_algorithm.dynamical_model
+        #     assert self.reward_model is algorithm.base_algorithm.reward_model
+        #     assert self.termination_model is algorithm.base_algorithm.termination_model
 
-        assert (
-            self.algorithm.base_algorithm.critic
-            is self.antagonist_algorithm.base_algorithm.critic
-        )
+        # assert (
+        #     self.algorithm.base_algorithm.critic
+        #     is self.antagonist_algorithm.base_algorithm.critic
+        # )
         assert self.policy is self.antagonist_algorithm.policy
         assert self.policy is not self.algorithm.policy
         assert (

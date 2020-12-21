@@ -1,6 +1,6 @@
 """Python Script Template."""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import gym.error
 import numpy as np

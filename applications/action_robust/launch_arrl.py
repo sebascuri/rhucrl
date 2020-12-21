@@ -3,7 +3,6 @@ import os
 from lsf_runner import init_runner, make_commands
 
 
-runner = init_runner("AdversarialRL", wall_time=24 * 60, num_threads=2)
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run.py"
 
@@ -14,18 +13,21 @@ ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
     "SAC": ["sac"],
     "PPO": ["ppo"],
-    "MVE": ["hucrl", "hucrl3"],
-    "DataAugmentation": ["hucrl", "hucrl3"],
-    "RAP": ["ppo", "sac"],
-    "RARL": ["ppo", "sac"],
-    "HRARL": ["hucrl"],
-    "MaxiMin": ["mve"],
-    "BestResponse": ["mve"],
-    "RHUCRL": ["mve", "mve3", "da"],
+    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "MVE": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "DataAugmentation": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "DataAugmentation": ["hucrl", "hucrl3"],
+    # "RAP": ["ppo", "sac"],
+    # "RARL": ["ppo", "sac"],
+    # "HRARL": ["hucrl"],
+    # "MaxiMin": ["mve"],
+    # "BestResponse": ["mve"],
+    # "RHUCRL": ["mve", "mve3", "da"],
 }
 
-commands = []
 for agent, agent_configs in AGENTS.items():
+    runner = init_runner(f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=2)
+    commands = []
     for agent_config in agent_configs:
         commands += make_commands(
             script,
@@ -39,5 +41,4 @@ for agent, agent_configs in AGENTS.items():
                 "env-config": ENVS,
             },
         )
-
-runner.run(commands)
+    runner.run(commands)

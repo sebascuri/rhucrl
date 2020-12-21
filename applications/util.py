@@ -27,10 +27,8 @@ def get_environment(name, alpha, force_body_names=("torso",)):
     return environment
 
 
-def get_agent(environment, agent_name, agent_config=None, *args, **kwargs):
+def get_agent(environment, agent_name, *args, **kwargs):
     """Get environment."""
-    if agent_config is not None:
-        kwargs.update(**parse_config_file(agent_config))
     try:
         agent_module = import_module("rhucrl.agent")
         agent = getattr(agent_module, f"{agent_name}Agent").default(
