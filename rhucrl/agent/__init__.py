@@ -1,18 +1,22 @@
 """Python Script Template."""
-from .action_robust_agent import NoisyActionRobustAgent, ProbabilisticActionRobustAgent
+from .action_robust_agent import ActionRobustAgent
 from .adversarial_mpc_agent import AdversarialMPCAgent
 from .dr_agent import DomainRandomizationAgent
 from .maximin_agent import MaxiMinAgent
 from .ep_opt import EPOPTAgent
 from .rarl_agent import HRARLAgent, RAPAgent, RARLAgent
+from .action_robust_hucrl_agent import ActionRobustHUCRLAgent
 from .rhucrl_agent import BestResponseAgent, RHUCRLAgent
-from .arhucrl_agent import NoisyActionRHUCRLAgent, ProbabilisticActionRHUCRLAgent
 
+AR_AGENTS = [
+    "ActionRobust",
+    "ActionRobustHUCRL",
+]
 DR_AGENTS = [
     "DomainRandomization",
     "EPOPT",
 ]
-AGENTS = [
+ADVERSARIAL_AGENTS = [
     "RARL",
     "RAP",
     "HRARL",
@@ -20,8 +24,4 @@ AGENTS = [
     "RHUCRL",
     "MaxiMin",
     "BestResponse",
-    "NoisyActionRobust",
-    "ProbabilisticActionRobust",
-    "NoisyActionRHUCRL",
-    "ProbabilisticActionRHUCRL",
 ]

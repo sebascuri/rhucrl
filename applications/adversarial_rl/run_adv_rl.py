@@ -10,7 +10,7 @@ from rllib.util.training.agent_training import train_agent
 from rllib.util.utilities import set_random_seed
 
 from applications.util import get_agent, parse_config_file
-from rhucrl.agent import AGENTS as ADVERSARIAL_AGENTS
+from rhucrl.agent import ADVERSARIAL_AGENTS
 from rhucrl.agent.antagonist_agent import AntagonistAgent
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import MujocoAdversarialWrapper

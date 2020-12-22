@@ -11,7 +11,7 @@ class MaxiMinAgent(AbstractAgent):
     """Maximin Agent class."""
 
     @classmethod
-    def default(cls, environment, base_agent_name="MVE", *args, **kwargs):
+    def default(cls, environment, base_agent_name="BPTT", *args, **kwargs):
         """Initialize maximin by default."""
         policy = SplitPolicy.default(
             environment, hallucinate_protagonist=True, *args, **kwargs

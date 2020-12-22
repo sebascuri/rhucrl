@@ -4,5 +4,5 @@ num_samples: 1
 num_iter: 2
 train_frequency: 1
 num_episodes: 200
-exploration_episodes: 10
+exploration_episodes: 1
 beta: 0.1

@@ -13,7 +13,7 @@ from rllib.util.utilities import set_random_seed
 from rllib.policy.constant_policy import ConstantPolicy
 
 from applications.util import get_agent, parse_config_file
-from rhucrl.agent import AGENTS as ADVERSARIAL_AGENTS
+from rhucrl.agent import ADVERSARIAL_AGENTS
 from rhucrl.agent import DR_AGENTS
 from rhucrl.utilities.utilities import evaluate_domain_shift
 from rhucrl.environment import AdversarialEnv

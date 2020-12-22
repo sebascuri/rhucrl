@@ -1,3 +1,2 @@
 name: MBInvertedPendulum-v0
 max_steps: 1000
-force_body_names: ["pole"]

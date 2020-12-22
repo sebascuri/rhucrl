@@ -31,23 +31,26 @@ class ActionRobustPolicy(SplitPolicy, metaclass=ABCMeta):
         raise NotImplementedError
 
     @classmethod
-    def default(cls, environment, hallucinate_protagonist=True, *args, **kwargs):
+    def default(
+        cls, environment, hallucinate_protagonist=True, alpha=None, *args, **kwargs
+    ):
         """See `NNPolicy.default'."""
         protagonist_policy = NNPolicy(
             dim_state=environment.dim_state,
-            dim_action=environment.protagonist_dim_action,
+            dim_action=environment.dim_action,
         )
         antagonist_policy = NNPolicy(
             dim_state=environment.dim_state,
-            dim_action=environment.antagonist_dim_action,
+            dim_action=environment.dim_action,
         )
-        assert environment.protagonist_dim_action == environment.antagonist_dim_action
 
         hallucination_policy = NNPolicy(
             dim_state=environment.dim_state, dim_action=environment.dim_state
         )
+        if alpha is None:
+            alpha = environment.alpha
         return cls(
-            alpha=environment.alpha,
+            alpha=alpha,
             dim_state=environment.dim_state,
             dim_action=environment.dim_action,
             protagonist_policy=protagonist_policy,
@@ -98,7 +101,7 @@ class ProbabilisticActionRobustPolicy(ActionRobustPolicy):
     def forward(self, state):
         """Compute policy."""
         h_mean, h_scale_tril = self.hallucination_policy(state)
-        if torch.rand() < self.alpha:
+        if torch.rand(1).item() < self.alpha:
             mean, scale_tril = self.antagonist_policy(state)
         else:
             mean, scale_tril = self.protagonist_policy(state)

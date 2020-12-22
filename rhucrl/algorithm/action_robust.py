@@ -47,8 +47,8 @@ class ActionRobustPathwiseLoss(PathwiseLoss, metaclass=ABCMeta):
                 (antagonist_action, hallucination_action), dim=-1
             )
         return (
-            protagonist_action[..., : self.critic.dim_action],
-            antagonist_action[..., : self.critic.dim_action],
+            protagonist_action[..., : self.critic.dim_action[0]],
+            antagonist_action[..., : self.critic.dim_action[0]],
         )
 
     def _loss(self, state, action):
@@ -77,13 +77,11 @@ class NoisyActionRobustPathwiseLoss(ActionRobustPathwiseLoss):
         protagonist_action_ = self._get_action(self.policy.protagonist_policy, state)
         antagonist_action_ = self._get_action(self.policy.antagonist_policy, state)
         protagonist_action = (
-            (1 - self.alpha) * protagonist_action_
-            + self.alpha * antagonist_action_.detach(),
-        )
+            1 - self.alpha
+        ) * protagonist_action_ + self.alpha * antagonist_action_.detach()
         antagonist_action = (
-            (1 - self.alpha) * protagonist_action_.detach()
-            + self.alpha * antagonist_action_,
-        )
+            1 - self.alpha
+        ) * protagonist_action_.detach() + self.alpha * antagonist_action_
         protagonist_action, antagonist_action = self._add_hallucination_action(
             state=state,
             protagonist_action=protagonist_action,

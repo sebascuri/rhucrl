@@ -1,32 +1,33 @@
 """Python Script Template."""
 from importlib import import_module
-
 import torch
+from rhucrl.algorithm.antagonist_algorithm import AntagonistAlgorithm
+
 from rllib.agent import ModelBasedAgent
 from rllib.util.neural_networks.utilities import deep_copy_module
 
-from rhucrl.algorithm.antagonist_algorithm import AntagonistAlgorithm
-from rhucrl.algorithm.maximin_algorithm import MaxiMinAlgorithm
-from rhucrl.policy.split_policy import SplitPolicy
+from rhucrl.algorithm.action_robust import (
+    NoisyActionRobustPathwiseLoss,
+    ProbabilisticActionRobustPathwiseLoss,
+)
+from rhucrl.policy.action_robust_policy import (
+    NoisyActionRobustPolicy,
+    ProbabilisticActionRobustPolicy,
+)
 
 
-class RHUCRLAgent(ModelBasedAgent):
-    """RHUCRL Agent."""
+class ActionRobustHUCRLAgent(ModelBasedAgent):
+    """Action-Robust HUCRL Agent."""
 
-    def __init__(self, base_agent, best_response=False, *args, **kwargs):
+    def __init__(self, base_agent, *args, **kwargs):
         super().__init__(
             **{**base_agent.__dict__, **dict(base_agent.algorithm.named_modules())}
         )
-        self.algorithm = MaxiMinAlgorithm(base_algorithm=base_agent.algorithm)
-        self.antagonist_algorithm = AntagonistAlgorithm(
-            base_algorithm=deep_copy_module(base_agent.algorithm)
-        )
+        self.algorithm = base_agent.algorithm
+        self.antagonist_algorithm = deep_copy_module(base_agent.algorithm)
 
         pessimistic_policy = deep_copy_module(base_agent.policy)
-        if best_response:
-            pessimistic_policy.hallucinate_antagonist = False
-        else:
-            pessimistic_policy.hallucinate_antagonist = True
+        pessimistic_policy.hallucinate_antagonist = True
         pessimistic_policy.antagonist = True
         pessimistic_policy.set_protagonist_policy(
             self.algorithm.policy.protagonist_policy
@@ -64,7 +65,7 @@ class RHUCRLAgent(ModelBasedAgent):
         """Learn antagonist."""
         # Learn Protagonist.
         super().learn()
-        # Set protagonist policy parameters.
+        # # Set protagonist policy parameters.
         # self.antagonist_algorithm.policy.set_protagonist_policy(
         #     self.algorithm.policy.protagonist_policy
         # )
@@ -93,22 +94,29 @@ class RHUCRLAgent(ModelBasedAgent):
         self._learn_steps(closure)
 
     @classmethod
-    def default(cls, environment, base_agent_name="BPTT", *args, **kwargs):
-        """See `AbstractAgent.default' method."""
-        policy = SplitPolicy.default(
-            environment, hallucinate_protagonist=True, *args, **kwargs
-        )
+    def default(
+        cls, environment, base_agent_name="BPTT", kind="noisy", *args, **kwargs
+    ):
+        """Initialize Action Robust agent."""
+        if kind == "noisy":
+            policy_ = NoisyActionRobustPolicy
+            pathwise_loss_ = NoisyActionRobustPathwiseLoss
+        elif kind == "probabilistic":
+            policy_ = ProbabilisticActionRobustPolicy
+            pathwise_loss_ = ProbabilisticActionRobustPathwiseLoss
+        else:
+            raise NotImplementedError(f"{kind} wrongly parsed.")
+
+        policy = policy_.default(environment, *args, **kwargs)
+
         agent_module = import_module("rllib.agent")
-        base_agent = getattr(agent_module, f"{base_agent_name}Agent").default(
+        agent = getattr(agent_module, f"{base_agent_name}Agent").default(
             environment, policy=policy, *args, **kwargs
         )
-        return super().default(
-            environment=environment, base_agent=base_agent, *args, **kwargs
+        agent.algorithm.pathwise_loss = pathwise_loss_(
+            critic=agent.algorithm.pathwise_loss.critic,
+            policy=agent.algorithm.pathwise_loss.policy,
         )
-
-
-class BestResponseAgent(RHUCRLAgent):
-    """Best Response Agent."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(best_response=True, *args, **kwargs)
+        return super().default(
+            environment=environment, base_agent=agent, *args, **kwargs
+        )

@@ -10,7 +10,7 @@ from rllib.util.training.agent_training import train_agent
 from rllib.util.utilities import set_random_seed
 
 from applications.util import get_agent, parse_config_file
-from rhucrl.agent import AGENTS as ADVERSARIAL_AGENTS
+from rhucrl.agent import ADVERSARIAL_AGENTS, AR_AGENTS
 from rhucrl.agent.antagonist_agent import AntagonistAgent
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import (
@@ -48,7 +48,7 @@ parser.add_argument(
 args = parser.parse_args()
 env_args = parse_config_file(args.env_config)
 agent_args = parse_config_file(args.agent_config)
-
+agent_args.update(**{"kind": args.kind, "alpha": args.alpha})
 agent_config = args.agent_config.split(".")[-2].split("/")[-1]
 name = f"{env_args['name']}_{args.alpha}_{args.agent}_{agent_config}_{args.seed}"
 set_random_seed(seed=args.seed)
@@ -70,7 +70,8 @@ if args.agent in ["RHUCRL", "BestResponse"] or agent_args.get("beta", 0.0) > 0.0
     dynamical_model = HallucinatedModel.default(
         environment, beta=agent_args.get("beta", 1.0)
     )
-    environment.add_wrapper(HallucinationWrapper)
+    if args.agent != "ActionRobustHUCRL":
+        environment.add_wrapper(HallucinationWrapper)
 else:
     dynamical_model = TransformedModel.default(environment)
 
@@ -81,6 +82,10 @@ agent = get_agent(
     dynamical_model=dynamical_model,
     **agent_args,
 )
+if args.agent in AR_AGENTS:
+    environment.add_wrapper(wrapper, alpha=args.alpha)
+    if args.agent == "ActionRobustHUCRL":
+        environment.add_wrapper(HallucinationWrapper)
 
 train_agent(
     agent=agent,
@@ -93,7 +98,7 @@ train_agent(
 with open(f"{name}.json", "w") as f:
     json.dump(agent.logger.statistics, f)
 
-if args.agent not in ADVERSARIAL_AGENTS:
+if args.agent not in ADVERSARIAL_AGENTS and args.agent not in AR_AGENTS:
     environment.add_wrapper(wrapper, alpha=args.alpha)
 robust_antagonist = AntagonistAgent.default(
     environment=environment, protagonist_agent=agent, base_agent_name="SAC"
