@@ -33,11 +33,7 @@ for agent, agent_configs in AGENTS.items():
             base_args={
                 "agent": agent,
                 "agent-config": f"config/agents/{agent_config}.yaml",
-                "hallucinate": "hucrl" in agent_config,
             },
-            common_hyper_args={
-                "seed": SEEDS,
-                "env-config": ENVS,
-            },
+            common_hyper_args={"seed": SEEDS, "env-config": ENVS, "alpha": ALPHAS},
         )
     runner.run(commands)

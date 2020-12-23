@@ -23,7 +23,9 @@ AGENTS = {
 }
 
 for agent, agent_configs in AGENTS.items():
-    runner = init_runner(f"AdversarialRL_{agent}", wall_time=4 * 60, num_threads=2)
+    runner = init_runner(
+        f"DomainRandomizationRL_{agent}", wall_time=4 * 60, num_threads=2
+    )
     commands = []
     for agent_config in agent_configs:
         commands += make_commands(
@@ -31,11 +33,7 @@ for agent, agent_configs in AGENTS.items():
             base_args={
                 "agent": agent,
                 "agent-config": f"config/agents/{agent_config}.yaml",
-                "hallucinate": "hucrl" in agent_config,
             },
-            common_hyper_args={
-                "seed": SEEDS,
-                "env-config": ENVS,
-            },
+            common_hyper_args={"seed": SEEDS, "env-config": ENVS},
         )
     runner.run(commands)
