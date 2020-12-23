@@ -3,6 +3,6 @@ num_steps: 1
 num_samples: 1
 num_iter: 2
 train_frequency: 1
-num_episodes: 200
+num_episodes: 210
 exploration_episodes: 10
 beta: 0.1
