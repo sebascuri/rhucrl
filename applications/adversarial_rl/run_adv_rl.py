@@ -74,7 +74,7 @@ agent = get_agent(
 train_agent(
     agent=agent,
     environment=environment,
-    num_episodes=agent_args["num_episodes"],
+    num_episodes=12,  # agent_args["num_episodes"],
     max_steps=env_args["max_steps"],
     print_frequency=0,
 )
@@ -94,7 +94,7 @@ robust_antagonist = AntagonistAgent.default(
 train_agent(
     robust_antagonist,
     environment=environment,
-    num_episodes=agent_args["num_episodes"],
+    num_episodes=12,  # agent_args["num_episodes"],
     max_steps=env_args["max_steps"],
     print_frequency=0,
 )

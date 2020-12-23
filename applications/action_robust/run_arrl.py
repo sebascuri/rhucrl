@@ -50,7 +50,7 @@ env_args = parse_config_file(args.env_config)
 agent_args = parse_config_file(args.agent_config)
 agent_args.update(**{"kind": args.kind, "alpha": args.alpha})
 agent_config = args.agent_config.split(".")[-2].split("/")[-1]
-name = f"{env_args['name']}_{args.alpha}_{args.agent}_{agent_config}_{args.seed}"
+name = f"{env_args['name']}_{args.kind}_{args.alpha}_{args.agent}_{agent_config}_{args.seed}"
 set_random_seed(seed=args.seed)
 torch.set_num_threads(args.num_threads)
 
@@ -90,7 +90,7 @@ if args.agent in AR_AGENTS:
 train_agent(
     agent=agent,
     environment=environment,
-    num_episodes=agent_args["num_episodes"],
+    num_episodes=12,  # agent_args["num_episodes"],
     max_steps=env_args["max_steps"],
     print_frequency=0,
 )
@@ -106,7 +106,7 @@ robust_antagonist = AntagonistAgent.default(
 train_agent(
     robust_antagonist,
     environment=environment,
-    num_episodes=agent_args["num_episodes"],
+    num_episodes=12,  # agent_args["num_episodes"],
     max_steps=env_args["max_steps"],
     print_frequency=0,
 )

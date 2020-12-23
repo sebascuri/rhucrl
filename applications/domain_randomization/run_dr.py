@@ -94,7 +94,7 @@ if args.agent in DR_AGENTS:
 train_agent(
     agent=agent,
     environment=environment,
-    num_episodes=agent_args["num_episodes"],
+    num_episodes=12,  # agent_args["num_episodes"],
     max_steps=env_args["max_steps"],
     print_frequency=0,
 )
