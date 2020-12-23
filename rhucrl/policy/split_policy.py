@@ -64,7 +64,7 @@ class SplitPolicy(AdversarialPolicy):
         antagonist_policy=None,
         hallucination_policy=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """See `NNPolicy.default'."""
         if protagonist_policy is None:

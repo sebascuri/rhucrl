@@ -1,8 +1,9 @@
-from typing import Dict, Tuple, Iterable, Optional
+from typing import Dict, Iterable, Optional, Tuple
+
+import gym
 import numpy as np
 
 from .adversarial_wrapper import AdversarialWrapper
-import gym
 
 try:
     from gym.envs.mujoco import MujocoEnv
@@ -19,6 +20,9 @@ try:
         def _antagonist_action_to_friction(
             self, antagonist_action: np.ndarray
         ) -> None: ...
+        def adversarial_step(
+            self, protagonist_action: np.ndarray, antagonist_action: np.ndarray
+        ) -> Tuple[np.ndarray, float, bool, dict]: ...
 
 except (ModuleNotFoundError, gym.error.DependencyNotInstalled):
     pass

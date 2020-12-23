@@ -1,7 +1,7 @@
 """Python Script Template."""
+import time
 from abc import ABCMeta
 from copy import deepcopy
-import time
 
 import numpy as np
 from rllib.agent import AbstractAgent

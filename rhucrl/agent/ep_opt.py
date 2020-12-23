@@ -1,13 +1,22 @@
 """Python Script Template."""
-from rllib.agent import PPOAgent
 import math
-import torch
+
 import numpy as np
-from torch.distributions.uniform import Uniform
+import torch
+from rllib.agent import PPOAgent
 from rllib.dataset.utilities import stack_list_of_tuples
+from torch.distributions.uniform import Uniform
 
 
 class EPOPTAgent(PPOAgent):
+    """EP-OPT Agent.
+
+    References
+    ----------
+    Rajeswaran, A., Ghotra, S., Ravindran, B., & Levine, S. (2016).
+    Epopt: Learning robust neural network policies using model ensembles. ICLR.
+    """
+
     def __init__(self, num_params, alpha=0.2, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.domain_distribution = Uniform(
@@ -18,6 +27,7 @@ class EPOPTAgent(PPOAgent):
         self.alpha = alpha
 
     def act(self, state):
+        """Concatenate episode domain."""
         action = super().act(state)
         return np.concatenate([action, self.domain])
 
@@ -28,6 +38,7 @@ class EPOPTAgent(PPOAgent):
         self.logger.update(**{f"domain-{i}": val for i, val in enumerate(self.domain)})
 
     def observe(self, observation):
+        """Remove domain related observations."""
         observation.action = observation.action[: self.policy.dim_action[0]]
         super().observe(observation)
 
@@ -56,6 +67,7 @@ class EPOPTAgent(PPOAgent):
 
     @classmethod
     def default(cls, environment, num_params=None, *args, **kwargs):
+        """See `AbstractAgent.default()'."""
         if num_params is None:
             num_params = environment.antagonist_dim_action[0]
         return super().default(environment, num_params=num_params, *args, **kwargs)

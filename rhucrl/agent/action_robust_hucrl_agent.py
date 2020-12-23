@@ -1,8 +1,7 @@
 """Python Script Template."""
 from importlib import import_module
-import torch
-from rhucrl.algorithm.antagonist_algorithm import AntagonistAlgorithm
 
+import torch
 from rllib.agent import ModelBasedAgent
 from rllib.util.neural_networks.utilities import deep_copy_module
 

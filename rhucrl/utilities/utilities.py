@@ -1,8 +1,9 @@
 """Training utilities helpers."""
 import numpy as np
-from rhucrl.environment.adversarial_environment import AdversarialEnv
-from rllib.util.rollout import rollout_episode
 from hucrl.environment.hallucination_wrapper import HallucinationWrapper
+from rllib.util.rollout import rollout_episode
+
+from rhucrl.environment.adversarial_environment import AdversarialEnv
 
 
 def change_mass(environment, body_idx, new_mass):

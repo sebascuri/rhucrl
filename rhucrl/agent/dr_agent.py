@@ -1,12 +1,18 @@
 """Python Script Template."""
-from rllib.agent import AbstractAgent
 from importlib import import_module
-import torch
+
 import numpy as np
+import torch
+from rllib.agent import AbstractAgent
 from torch.distributions.uniform import Uniform
 
 
 class DomainRandomizationAgent(AbstractAgent):
+    """Domain Randomization Agent.
+
+    It samples a new domain at each episode and then it overrides the base_agent.
+    """
+
     def __init__(self, base_agent, num_params, *args, **kwargs):
         super().__init__(
             **{**base_agent.__dict__, **dict(base_agent.algorithm.named_modules())}
@@ -20,6 +26,7 @@ class DomainRandomizationAgent(AbstractAgent):
         self.num_params = num_params
 
     def act(self, state):
+        """Concatenate episode domain."""
         action = super().act(state)
         return np.concatenate([action, self.domain])
 
@@ -30,6 +37,7 @@ class DomainRandomizationAgent(AbstractAgent):
         self.logger.update(**{f"domain-{i}": val for i, val in enumerate(self.domain)})
 
     def observe(self, observation):
+        """Remove domain related observations."""
         observation.action = observation.action[: self.policy.dim_action[0]]
         super().observe(observation)
 
@@ -37,6 +45,7 @@ class DomainRandomizationAgent(AbstractAgent):
     def default(
         cls, environment, base_agent_name="SAC", num_params=None, *args, **kwargs
     ):
+        """See `AbstractAgent.default()'."""
         if num_params is None:
             num_params = environment.antagonist_dim_action[0]
 
