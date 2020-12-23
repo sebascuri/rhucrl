@@ -24,7 +24,7 @@ AGENTS = {
 
 for agent, agent_configs in AGENTS.items():
     runner = init_runner(
-        f"DomainRandomizationRL_{agent}", wall_time=4 * 60, num_threads=2
+        f"DomainRandomizationRL_{agent}", wall_time=24 * 60, num_threads=2
     )
     commands = []
     for agent_config in agent_configs:
