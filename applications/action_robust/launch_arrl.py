@@ -4,10 +4,10 @@ from lsf_runner import init_runner, make_commands
 
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-script = "run.py"
+script = "run_arrl.py"
 
 SEEDS = [0]
-ALPHAS = [0.05, 0.1, 0.15, 0.2, 0.25]
+ALPHAS = [0.1]
 KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
