@@ -7,7 +7,7 @@ cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run_adv_rl.py"
 
 SEEDS = [0, 1, 2, 3, 4]
-ALPHAS = [1.0]  # , 2.0, 5.0, 10.0]
+ALPHAS = [1.0, 2.0, 5.0, 10.0]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
