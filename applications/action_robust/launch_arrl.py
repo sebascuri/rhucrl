@@ -6,7 +6,7 @@ from lsf_runner import init_runner, make_commands
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run_arrl.py"
 
-SEEDS = [0]
+SEEDS = [0, 1, 2, 3, 4]
 ALPHAS = [0.1]
 KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
