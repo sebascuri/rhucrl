@@ -7,7 +7,7 @@ cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run_arrl.py"
 
 SEEDS = [0, 1, 2, 3, 4]
-ALPHAS = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+ALPHAS = [0.1, 0.2, 0.3]
 KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
@@ -15,8 +15,8 @@ AGENTS = {
     "SAC": ["sac"],
     "PPO": ["ppo"],
     "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    "MVE": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    "DataAugmentation": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "MVE": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "DataAugmentation": ["hucrl_a", "hucrl_b", "hucrl_c"],
     "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
     "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
     "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
