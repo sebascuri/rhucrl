@@ -23,7 +23,9 @@ AGENTS = {
 }
 
 for agent, agent_configs in AGENTS.items():
-    runner = init_runner(f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=2)
+    runner = init_runner(
+        f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=2, memory=4096
+    )
     commands = []
     for agent_config in agent_configs:
         commands += make_commands(
