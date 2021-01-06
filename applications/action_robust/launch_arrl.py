@@ -13,18 +13,16 @@ ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "wa
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
     "SAC": ["sac"],
-    "PPO": ["ppo"],
-    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    # "MVE": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    # "DataAugmentation": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
-    "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "PPO": ["ppo"],
+    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
+    # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
 }
 
 for agent, agent_configs in AGENTS.items():
     runner = init_runner(
-        f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=2, memory=4096
+        f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=1, memory=4096
     )
     commands = []
     for agent_config in agent_configs:
