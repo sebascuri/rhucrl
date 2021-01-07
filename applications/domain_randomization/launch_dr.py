@@ -12,11 +12,11 @@ ENVS = ["half_cheetah", "inverted_pendulum", "reacher", "swimmer", "walker"]
 
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
-    # "EPOPT": ["epopt"],
-    # "DomainRandomization": ["epopt_dr"],
-    "SAC": ["sac"],
-    # "PPO": ["ppo"],
-    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "EPOPT": ["epopt"],
+    "DomainRandomization": ["epopt_dr"],
+    # "SAC": ["sac"],
+    "PPO": ["ppo"],
+    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
     # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],

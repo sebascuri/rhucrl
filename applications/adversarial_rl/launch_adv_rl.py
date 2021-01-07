@@ -10,12 +10,13 @@ SEEDS = [0, 1, 2]
 ALPHAS = [1.0, 2.0, 5.0, 10.0]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
+# I'M missing reacher with SAC and PPO
 AGENTS = {
-    "SAC": ["sac"],
-    "PPO": ["ppo"],
-    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    # "RAP": ["ppo", "sac"],
-    # "RARL": ["ppo", "sac"],
+    # "SAC": ["sac"],
+    # "PPO": ["ppo"],
+    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "RAP": ["ppo"],
+    "RARL": ["ppo"],
     # "HRARL": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
     # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],

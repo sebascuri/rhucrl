@@ -12,9 +12,9 @@ KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
-    "SAC": ["sac"],
-    # "PPO": ["ppo"],
-    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "SAC": ["sac"],
+    "PPO": ["ppo"],
+    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
     # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
