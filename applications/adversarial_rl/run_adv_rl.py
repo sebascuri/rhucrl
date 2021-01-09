@@ -83,11 +83,21 @@ with open(f"{name}.json", "w") as f:
     json.dump(agent.logger.statistics, f)
 
 if args.agent not in ADVERSARIAL_AGENTS:
-    environment.add_wrapper(
-        MujocoAdversarialWrapper,
-        alpha=args.alpha,
-        force_body_names=env_args["force_body_names"],
-    )
+    try:
+        environment.add_wrapper(
+            MujocoAdversarialWrapper,
+            alpha=args.alpha,
+            force_body_names=env_args["force_body_names"],
+        )
+    except AssertionError:
+        # This error happens when the applying an adversarial wrapper to a
+        # Hallucination Wrapper.
+        environment.pop_wrapper()
+        environment.add_wrapper(
+            MujocoAdversarialWrapper,
+            alpha=args.alpha,
+            force_body_names=env_args["force_body_names"],
+        )
 robust_antagonist = AntagonistAgent.default(
     environment=environment, protagonist_agent=agent, base_agent_name="SAC"
 )
