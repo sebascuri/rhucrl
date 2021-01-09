@@ -16,7 +16,7 @@ AGENTS = {
     "DomainRandomization": ["epopt_dr"],
     # "SAC": ["sac"],
     "PPO": ["ppo"],
-    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
     # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
@@ -36,4 +36,4 @@ for agent, agent_configs in AGENTS.items():
             },
             common_hyper_args={"seed": SEEDS, "env-config": ENVS},
         )
-    runner.run(commands)
+    runner.run_batch(commands)

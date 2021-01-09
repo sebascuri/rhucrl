@@ -14,13 +14,13 @@ ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
 AGENTS = {
     # "SAC": ["sac"],
     # "PPO": ["ppo"],
-    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
     # "RAP": ["ppo"],
     # "RARL": ["ppo"],
-    "HRARL": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    # "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
-    # "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    # "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    # "HRARL": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
+    "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
+    "RHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"],
 }
 
 for agent, agent_configs in AGENTS.items():
@@ -37,4 +37,4 @@ for agent, agent_configs in AGENTS.items():
             },
             common_hyper_args={"seed": SEEDS, "env-config": ENVS, "alpha": ALPHAS},
         )
-    runner.run(commands)
+    runner.run_batch(commands)
