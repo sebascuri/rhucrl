@@ -5,19 +5,17 @@ import json
 import torch
 from hucrl.environment.hallucination_wrapper import HallucinationWrapper
 from hucrl.model.hallucinated_model import HallucinatedModel
-from rllib.model.transformed_model import TransformedModel
 from rllib.agent.fixed_policy_agent import FixedPolicyAgent
-
+from rllib.model.transformed_model import TransformedModel
+from rllib.policy.constant_policy import ConstantPolicy
 from rllib.util.training.agent_training import train_agent
 from rllib.util.utilities import set_random_seed
-from rllib.policy.constant_policy import ConstantPolicy
 
 from applications.util import get_agent, parse_config_file
-from rhucrl.agent import ADVERSARIAL_AGENTS
-from rhucrl.agent import DR_AGENTS
-from rhucrl.utilities.utilities import evaluate_domain_shift
+from rhucrl.agent import ADVERSARIAL_AGENTS, DR_AGENTS
 from rhucrl.environment import AdversarialEnv
 from rhucrl.environment.wrappers import MujocoDomainRandomizationWrapper
+from rhucrl.utilities.utilities import evaluate_domain_shift
 
 parser = argparse.ArgumentParser("Robust Domain Randomization RL")
 
@@ -110,10 +108,7 @@ except AttributeError:
 eval_agent = FixedPolicyAgent.default(environment, policy=policy)
 eval_agent.logger.change_log_dir(name)
 evaluate_domain_shift(
-    env_args=env_args,
-    agent=eval_agent,
-    seed=args.seed,
-    num_runs=args.num_eval_runs,
+    env_args=env_args, agent=eval_agent, seed=args.seed, num_runs=args.num_eval_runs
 )
 with open(f"{name}_eval.json", "w") as f:
     json.dump(eval_agent.logger.statistics, f)

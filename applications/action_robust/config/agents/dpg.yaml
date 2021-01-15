@@ -1,0 +1,5 @@
+base_agent_name: DPG
+num_iter: 1
+train_frequency: 1
+num_episodes: 210
+exploration_episodes: 10

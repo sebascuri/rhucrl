@@ -50,7 +50,9 @@ env_args = parse_config_file(args.env_config)
 agent_args = parse_config_file(args.agent_config)
 agent_args.update(**{"kind": args.kind, "alpha": args.alpha})
 agent_config = args.agent_config.split(".")[-2].split("/")[-1]
-name = f"{env_args['name']}_{args.kind}_{args.alpha}_{args.agent}_{agent_config}_{args.seed}"
+name = f"""
+    {env_args['name']}_{args.kind}_{args.alpha}_{args.agent}_{agent_config}_{args.seed}
+"""
 set_random_seed(seed=args.seed)
 torch.set_num_threads(args.num_threads)
 
@@ -77,10 +79,7 @@ else:
 
 # Define agent
 agent = get_agent(
-    environment,
-    agent_name=args.agent,
-    dynamical_model=dynamical_model,
-    **agent_args,
+    environment, agent_name=args.agent, dynamical_model=dynamical_model, **agent_args
 )
 if args.agent in AR_AGENTS:
     environment.add_wrapper(wrapper, alpha=args.alpha)

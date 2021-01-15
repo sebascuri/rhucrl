@@ -36,12 +36,10 @@ class ActionRobustPolicy(SplitPolicy, metaclass=ABCMeta):
     ):
         """See `NNPolicy.default'."""
         protagonist_policy = NNPolicy(
-            dim_state=environment.dim_state,
-            dim_action=environment.dim_action,
+            dim_state=environment.dim_state, dim_action=environment.dim_action
         )
         antagonist_policy = NNPolicy(
-            dim_state=environment.dim_state,
-            dim_action=environment.dim_action,
+            dim_state=environment.dim_state, dim_action=environment.dim_action
         )
 
         hallucination_policy = NNPolicy(

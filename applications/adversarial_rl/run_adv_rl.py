@@ -65,10 +65,7 @@ else:
 
 # Define agent
 agent = get_agent(
-    environment,
-    agent_name=args.agent,
-    dynamical_model=dynamical_model,
-    **agent_args,
+    environment, agent_name=args.agent, dynamical_model=dynamical_model, **agent_args
 )
 
 train_agent(
