@@ -97,9 +97,8 @@ def init_experiment(args, env_kwargs=None, **kwargs):
 def run(args, env_kwargs=None, **kwargs):
     """Run main function with arguments."""
     # Initialize experiment.
-    agent, environment = init_experiment(args, env_kwargs, **kwargs)
-
     name = f"{args.agent}_{args.robustness}_{args.alpha}"
+    agent, environment = init_experiment(args, env_kwargs, **kwargs)
 
     agent.eval()
     if args.robustness == "parameter":
