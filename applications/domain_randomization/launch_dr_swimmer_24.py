@@ -10,13 +10,7 @@ SEEDS = [0, 1, 2]
 ENVS = ["swimmer"]
 
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
-AGENTS = {
-    "EPOPT": ["epopt"],
-    "DomainRandomization": ["epopt_dr"],
-    "SAC": ["sac"],
-    "PPO": ["ppo"],
-    "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"],
-}
+AGENTS = {"SAC": ["sac"], "BPTT": ["hucrl_a", "hucrl_b", "hucrl_c"]}
 
 for agent, agent_configs in AGENTS.items():
     runner = init_runner(
