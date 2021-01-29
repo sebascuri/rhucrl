@@ -19,6 +19,7 @@ from rhucrl.environment.wrappers import (
 def init_experiment(args, env_kwargs=None, **kwargs):
     """Initialize experiment to get agent and environment."""
     if args.robustness == "parameter":
+        mass = args.alpha * 30 / 7 + 2 / 7
         args.alpha = 0
 
     env_kwargs = dict() if env_kwargs is None else env_kwargs
@@ -47,7 +48,7 @@ def init_experiment(args, env_kwargs=None, **kwargs):
     elif args.robustness == "action":
         environment.add_wrapper(NoisyActionRobustWrapper, alpha=args.alpha)
     elif args.robustness == "parameter" and args.agent == "RHUCRL":
-        dynamical_model.base_model.mass = args.alpha * 30 / 7 + 2 / 7
+        dynamical_model.base_model.mass = mass
 
     # Initialize agent.
     if args.agent == "HUCRL" or args.agent == "RHUCRL":
