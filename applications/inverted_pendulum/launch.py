@@ -12,15 +12,13 @@ AGENTS = ["RHUCRL", "HUCRL"]  # , "baseline"]
 ROBUSTNESS = ["adversarial", "action", "parameter"]
 ALPHAS = [0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
 
+runner = init_runner(f"Inverted Pendulum", num_threads=1, memory=4096)
 
+commands = []
 for agent, robustness in product(AGENTS, ROBUSTNESS):
-    runner = init_runner(
-        f"AdversarialRL_{agent}", wall_time=24 * 60, num_threads=1, memory=4096
-    )
-    commands = make_commands(
+    commands += make_commands(
         script,
         base_args={"agent": agent, "robustness": robustness},
         common_hyper_args={"alpha": ALPHAS},
     )
-    # print(commands)
-    runner.run_batch(commands)
+runner.run(commands)
