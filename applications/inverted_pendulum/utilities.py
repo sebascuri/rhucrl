@@ -8,7 +8,9 @@ from rllib.model import AbstractModel
 class PendulumModel(AbstractModel):
     """Pendulum Model."""
 
-    def __init__(self, alpha, force_body_names=("mass",), wrapper="adversarial"):
+    def __init__(
+        self, alpha, force_body_names=("mass", "gravity"), wrapper="adversarial"
+    ):
         if alpha == 0:
             dim_action = (1,)
         elif wrapper == "adversarial":

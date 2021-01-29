@@ -36,14 +36,18 @@ def init_experiment(args, env_kwargs=None, **kwargs):
 
     dynamical_model = TransformedModel(
         PendulumModel(
-            alpha=args.alpha, force_body_names=("mass",), wrapper=args.robustness
+            alpha=args.alpha,
+            force_body_names=("mass", "gravity"),
+            wrapper=args.robustness,
         ),
         transformations=[],
     )
 
     if args.robustness == "adversarial":
         environment.add_wrapper(
-            AdversarialPendulumWrapper, alpha=args.alpha, force_body_names=("mass",)
+            AdversarialPendulumWrapper,
+            alpha=args.alpha,
+            force_body_names=("mass", "gravity"),
         )
     elif args.robustness == "action":
         environment.add_wrapper(NoisyActionRobustWrapper, alpha=args.alpha)
