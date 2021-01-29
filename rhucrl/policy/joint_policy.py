@@ -13,8 +13,8 @@ class JointPolicy(AdversarialPolicy):
 
     def forward(self, state):
         """Forward compute the policy."""
-        p_dim = self.antagonist_policy.dim_action[0]
-        a_dim = self.protagonist_policy.dim_action[0]
+        p_dim = self.protagonist_policy.dim_action[0]
+        a_dim = self.antagonist_policy.dim_action[0]
 
         p_mean, p_scale_tril = self.protagonist_policy(state)
         a_mean, a_scale_tril = self.antagonist_policy(state)
