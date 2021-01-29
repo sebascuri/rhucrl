@@ -43,8 +43,10 @@ def evaluate_domain_shift(env_args, agent, seed, num_runs):
         )
         for name in friction_names
     }
-
-    k = np.linspace(-1, 1, num=11)
+    if env_args["name"] == "MBSwimmer-v0":
+        k = np.linspace(-0.5, 1, 7)
+    else:
+        k = np.linspace(-1, 1, num=11)
     for values in np.array(np.meshgrid(*np.tile(k, size).reshape(size, -1))).T.reshape(
         -1, size
     ):
