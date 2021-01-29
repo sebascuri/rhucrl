@@ -6,16 +6,12 @@ from lsf_runner import init_runner, make_commands
 cwd = os.path.dirname(os.path.realpath(__file__))
 script = "run_arrl.py"
 
-SEEDS = [0, 1, 2]
+SEEDS = [0]
 ALPHAS = [0.1, 0.2, 0.3]
 KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
-AGENTS = {
-    "MaxiMin": ["hucrl_a", "hucrl_b", "hucrl_c", "sac", "ppo"],
-    "BestResponse": ["hucrl_a", "hucrl_b", "hucrl_c"],
-    "ActionRobustHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c", "sac"],
-}
+AGENTS = {"ActionRobustHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c", "sac"]}
 
 for agent, agent_configs in AGENTS.items():
     runner = init_runner(
