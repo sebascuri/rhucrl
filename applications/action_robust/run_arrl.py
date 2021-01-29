@@ -51,7 +51,15 @@ agent_args = parse_config_file(args.agent_config)
 agent_args.update(**{"kind": args.kind, "alpha": args.alpha})
 agent_config = args.agent_config.split(".")[-2].split("/")[-1]
 name = "_".join(
-    [env_args["name"], args.kind, args.alpha, args.agent, agent_config, args.seed]
+    str(v)
+    for v in [
+        env_args["name"],
+        args.kind,
+        args.alpha,
+        args.agent,
+        agent_config,
+        args.seed,
+    ]
 )
 set_random_seed(seed=args.seed)
 torch.set_num_threads(args.num_threads)
