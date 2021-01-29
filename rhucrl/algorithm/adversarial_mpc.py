@@ -32,7 +32,7 @@ class AdversarialMPCShooting(nn.Module):  # type: ignore
         base_solver: MPCSolver,
         protagonist_dim_action: Tuple[int],
         antagonist_dim_action: Tuple[int],
-        nominal_model: bool,
+        nominal_model: bool = False,
     ) -> None:
         super().__init__()
         self.base_solver = base_solver

@@ -22,8 +22,8 @@ class AdversarialPendulumWrapper(MujocoAdversarialWrapper):
     def _antagonist_action_to_xfrc(self, antagonist_action):
         if "gravity" in self.force_body_names:
             idx = self.force_body_names["gravity"]
-            self.env.g = 10.0 * (1 + antagonist_action[idx])
+            self.env.g = 10.0 * (1 + self.alpha * antagonist_action[idx])
 
         if "mass" in self.force_body_names:
             idx = self.force_body_names["mass"]
-            self.env.m = 1.0 * (1 + antagonist_action[idx])
+            self.env.m = 1.0 * (1 + self.alpha * antagonist_action[idx])
