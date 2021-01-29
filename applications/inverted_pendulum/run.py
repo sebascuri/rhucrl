@@ -66,11 +66,11 @@ def init_experiment(args, env_kwargs=None, **kwargs):
             exploration_episodes=0,
         )
     else:
-        if args.wrapper == "adversary":
+        if args.robustness == "adversarial":
             agent = RARLAgent.default(
                 environment, exploration_steps=0, exploration_episodes=0
             )
-        elif args.wrapper == "action":
+        elif args.robustness == "action":
             agent = ActionRobustAgent.default(
                 environment,
                 kind="probabilistic",
@@ -87,7 +87,7 @@ def init_experiment(args, env_kwargs=None, **kwargs):
             environment=environment,
             num_episodes=200,
             max_steps=500,
-            print_frequency=0,
+            print_frequency=4,
         )
 
     agent.logger.save_hparams(vars(args))
