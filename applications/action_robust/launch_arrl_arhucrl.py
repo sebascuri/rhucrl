@@ -11,7 +11,8 @@ ALPHAS = [0.1, 0.2, 0.3]
 KINDS = ["noisy", "probabilistic"]
 ENVS = ["half_cheetah", "hopper", "inverted_pendulum", "reacher", "swimmer", "walker"]
 ENVS = [f"config/envs/{env}.yaml" for env in ENVS]
-AGENTS = {"ActionRobustHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c", "sac"]}
+AGENTS = {"ActionRobustHUCRL": ["hucrl_a", "hucrl_b", "hucrl_c"]}  # ,  "sac"]}
+
 
 for agent, agent_configs in AGENTS.items():
     runner = init_runner(
