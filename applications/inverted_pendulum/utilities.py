@@ -61,7 +61,7 @@ class PendulumModel(AbstractModel):
             else:
                 u = protagonist_action
 
-        elif self.wrapper == "adversary" and self.alpha > 0:
+        elif self.wrapper == "adversarial" and self.alpha > 0:
             u = torch.clamp(protagonist_action, -self.max_torque, self.max_torque)
             if "gravity" in self.force_body_names:
                 idx = self.force_body_names["gravity"]
