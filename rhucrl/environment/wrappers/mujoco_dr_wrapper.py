@@ -48,7 +48,10 @@ class MujocoDomainRandomizationWrapper(AdversarialWrapper):
 
     def _antagonist_action_to_mass(self, antagonist_action):
         for i, (body_name, (idx, base_mass)) in enumerate(self.mass_names.items()):
-            new_mass = (1 + antagonist_action[i] + self.eps) * base_mass
+            if self.env.spec.id == "MBSwimmer-v0":
+                new_mass = (1 + 0.5 * antagonist_action[i] + self.eps) * base_mass
+            else:
+                new_mass = (1 + antagonist_action[i] + self.eps) * base_mass
             self.env.model.body_mass[idx] = new_mass
 
     def _antagonist_action_to_friction(self, antagonist_action):
