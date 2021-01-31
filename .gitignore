@@ -6,6 +6,7 @@ src/
 plot_*
 *.pdf
 *.png
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
