@@ -31,6 +31,20 @@ COLORS = OrderedDict(
     baseline="C4",
 )
 
+LINESTYLE = OrderedDict(
+    RHUCRL="solid",
+    BestResponse="dashed",
+    MaxiMin="dotted",
+    HUCRL="dashed",
+    sac="solid",
+    ppo="dashed",
+    RARL="dotted",
+    RAP="dashed",
+    DomainRandomization="dashed",
+    EPOPT="dotted",
+    baseline="dotted",
+)
+
 
 def set_figure_params(serif=False, fontsize=9):
     """Define default values for font, fontsize and use latex.

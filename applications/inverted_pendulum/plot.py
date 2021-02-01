@@ -4,9 +4,9 @@ import pandas as pd
 
 from applications.plotters import COLORS, LABELS, set_figure_params
 
-set_figure_params(serif=True, fontsize=12)
+set_figure_params(serif=True, fontsize=10)
 fig, ax = plt.subplots(ncols=3, nrows=1, sharey="row")
-fig.set_size_inches([6.5, 2.0])
+fig.set_size_inches(6.5, 1.5)
 df = pd.read_json("adversarial_robust.json")
 alpha = df.alpha.unique()
 agents = ["RHUCRL", "HUCRL", "baseline"]
@@ -49,7 +49,8 @@ for agent in agents:
         mass, mean - 3 * std, mean + 3 * std, alpha=0.3, color=COLORS[agent]
     )
 
-ax[2].legend(loc="best", frameon=False)
+ax[2].legend(loc="upper left", bbox_to_anchor=(0.0, 0.8), frameon=False)
 ax[2].set_xlabel("Relative Mass")
 ax[2].set_title("Parameter Robust")
-plt.show()
+plt.tight_layout(pad=0.0)
+plt.savefig("pendulum_swing_up.pdf")
