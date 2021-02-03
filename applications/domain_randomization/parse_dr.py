@@ -1,6 +1,7 @@
 """Parse Action Robust RL experiments."""
-import pandas as pd
 import os
+
+import pandas as pd
 
 
 class Experiment(object):
@@ -10,8 +11,11 @@ class Experiment(object):
         splits = file_name[:-5].split("_")
         self.environment = splits[0][2:-3]
         self.agent = splits[1]
-        self.config = splits[2]
-        self.seed = int(splits[3])
+        if len(splits) == 6:
+            self.config = splits[2] + "_" + splits[3]
+        else:
+            self.config = splits[2]
+        self.seed = int(splits[-2])
 
         df = pd.read_json(file_name)
         self.train_returns = df.train_return.to_numpy()
@@ -27,13 +31,15 @@ def parse_dir(path=None):
     if path is None:
         path = os.getcwd()
     df = pd.DataFrame()
-    for file_name in os.listdir(path):
-        if file_name.endswith("eval.json"):
-            experiment = Experiment(file_name)
-            df = df.append(experiment.get_df())
+    for file_name in filter(lambda x: x.endswith("eval.json"), os.listdir(path)):
+        experiment = Experiment(file_name)
+        df = df.append(experiment.get_df())
     return df
 
 
 if __name__ == "__main__":
+    import socket
+
     df = parse_dir()
-    df.to_json("dr.json")
+    df.reset_index(inplace=True)
+    df.to_json(f"parameter_robust_{socket.gethostname()}.json")
