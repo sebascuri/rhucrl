@@ -5,9 +5,9 @@ python parse_arrl.py
 cp action_robust*.json ..
 
 cd ../adversarial_rl
-python parse_adversarial_rl.py
+python parse_adv_rl.py
 cp adversarial_robust*.json ..
 
-cd domain_randomization
+cd ../domain_randomization
 python parse_dr.py
 cp parameter_robust*.json ..
