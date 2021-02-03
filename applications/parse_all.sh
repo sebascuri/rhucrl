@@ -2,11 +2,11 @@
 
 cd action_robust
 python parse_arrl.py
-cp adversarial_robust*.json ..
+cp action_robust*.json ..
 
 cd ../adversarial_rl
 python parse_adversarial_rl.py
-cp action_robust*.json ..
+cp adversarial_robust*.json ..
 
 cd domain_randomization
 python parse_dr.py
