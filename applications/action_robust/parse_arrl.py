@@ -52,6 +52,6 @@ def parse_dir(path=None):
 if __name__ == "__main__":
     import socket
 
-    df = parse_dir()
+    df = parse_dir(path=os.path.dirname(os.path.realpath(__file__)))
     df.reset_index(inplace=True)
     df.to_json(f"action_robust_{socket.gethostname()}.json")
