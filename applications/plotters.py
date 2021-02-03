@@ -14,7 +14,7 @@ LABELS = OrderedDict(
     RAP="RAP",
     DomainRandomization="DomainRandomization",
     EPOPT="EPOPT",
-    baseline="baseline",
+    baseline="Baseline",
 )
 
 COLORS = OrderedDict(
