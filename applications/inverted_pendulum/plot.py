@@ -25,7 +25,7 @@ for agent in agents:
     )
 
 # ax[0].legend(loc="best")
-ax[0].set_xlabel("Adversarial Power")
+ax[0].set_xlabel("Input Magnitude")
 ax[0].set_ylabel("Returns")
 ax[0].set_title("Adversarial Robust")
 
@@ -63,8 +63,11 @@ for agent in agents:
         mass, mean - 3 * std, mean + 3 * std, alpha=0.3, color=COLORS[agent]
     )
 
-ax[2].legend(loc="upper left", bbox_to_anchor=(0.0, 0.8), frameon=False)
 ax[2].set_xlabel("Relative Mass")
 ax[2].set_title("Parameter Robust")
+
+ax[0].legend(
+    loc="upper left", bbox_to_anchor=(-0.03, 0.7), frameon=False, handlelength=1.5
+)
 plt.tight_layout(pad=0.0)
 plt.savefig("pendulum_swing_up.pdf")

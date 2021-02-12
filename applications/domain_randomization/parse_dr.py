@@ -32,7 +32,7 @@ def parse_dir(path=None):
         path = os.getcwd()
     df = pd.DataFrame()
     for file_name in filter(lambda x: x.endswith("eval.json"), os.listdir(path)):
-        experiment = Experiment(file_name)
+        experiment = Experiment(os.path.join(path, file_name))
         df = df.append(experiment.get_df())
     return df
 
