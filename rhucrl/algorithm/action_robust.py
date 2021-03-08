@@ -2,8 +2,8 @@
 from abc import ABCMeta
 
 import torch
-from rllib.algorithms.pathwise_loss import PathwiseLoss
 from rllib.dataset.datatypes import Loss
+from rllib.util.losses import PathwiseLoss
 from rllib.util.neural_networks.utilities import DisableGradient
 from rllib.util.utilities import tensor_to_distribution
 from rllib.value_function.nn_ensemble_value_function import NNEnsembleQFunction
